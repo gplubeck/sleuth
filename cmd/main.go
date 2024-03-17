@@ -34,11 +34,13 @@ func main () {
     store.AddService(git)
     store.AddService(notes)
 
+    updateChannel := make(chan string)
+
     //start scheduler
-    go Scheduler(store)
+    go Scheduler(store, updateChannel)
 
     //start server
-    server := NewServiceServer(store)
+    server := NewServiceServer(store, updateChannel)
     log.Fatal(http.ListenAndServe(port, server))
 
 }

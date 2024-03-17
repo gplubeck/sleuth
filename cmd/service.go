@@ -1,17 +1,19 @@
 package main
 
 import (
-    "time"
-    "net"
+	"fmt"
+	"net"
+	"time"
 )
 
 type Service struct {
-    Name string
-    Address string //maybe should eventual be its own IP/FQDN type
-    Protocol Protocol //interface to allow for Strategy Pattern and future expansion
-    Start time.Time
-    Status bool
-    Failed []response
+    Name string `json:"name"`
+    Address string `json:"address"`//maybe should eventual be its own IP/FQDN type
+    Protocol Protocol `json:"protocol"`//interface to allow for Strategy Pattern and future expansion
+    Start time.Time //`json:"startTime`
+    lastUpdate time.Time // `json:"lastUpdate"`
+    Status bool `json:"status"`
+    Failed []response 
 }
 
 
@@ -72,3 +74,25 @@ func  (service *Service) getStatus() response{
     return resp
 }
 
+/*********************************************************
+* Used to return string that should be used as html content
+***********************************************************/
+func  (service *Service) String() string{
+    element := fmt.Sprintf("id: %d\nevent: %s\ndata: <div>%s</div>\n\n", 1, service.Name, service.Name)
+    return element
+}
+/*
+func  (service *Service) String() string{
+    element := fmt.Sprintf(`event: %s
+    data: <tr> <td>%s</td>
+        <td>
+           %t 
+        </td>
+        <td><a href='%s'>%s</a></td>
+        </tr>
+`, service.Name, service.Name, service.Status, service.Address, service.Address)
+
+    return element
+
+}
+*/

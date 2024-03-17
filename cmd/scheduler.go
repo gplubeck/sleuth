@@ -1,15 +1,16 @@
 package main
 
 import (
-    "fmt"
-    "time"
+	"fmt"
+	"time"
 )
+
 /*
 func Scheduler(services ServiceStore){
     for {
         servicesSlice := services.GetServices()
 
-        for _, service := range servicesSlice{ 
+        for _, service := range servicesSlice{
             //item := i
             fmt.Println(service.Name)
             fmt.Println(service.Address)
@@ -26,7 +27,8 @@ func Scheduler(services ServiceStore){
 }
 */
 
-func Scheduler(services ServiceStore){
+
+func Scheduler(services ServiceStore, channel chan<- string){
     for {
         servicesSlice := services.GetServices()
 
@@ -43,8 +45,17 @@ func Scheduler(services ServiceStore){
                     (*servicesSlice)[i].Status = false 
                 }
             }(s)
-        time.Sleep(2*time.Second)
-     }
+
+            serviceUpdate := service.String()
+            channel <- serviceUpdate 
+
+            
+            //simulate sending data
+            //message := []byte("hello from channel")
+            //channel <- message 
+            //time.Now().Format(time.RFC3339)
+            time.Sleep(2*time.Second)
+        }
     }
 }
 
