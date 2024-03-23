@@ -33,6 +33,7 @@ func Scheduler(services ServiceStore, channel chan<- string){
         servicesSlice := services.GetServices()
 
         for i, service := range *servicesSlice{ 
+            fmt.Println("test1")
             s := service
 
             go func (s Service){
@@ -56,6 +57,7 @@ func Scheduler(services ServiceStore, channel chan<- string){
             //time.Now().Format(time.RFC3339)
             time.Sleep(2*time.Second)
         }
+            fmt.Println("test")
     }
 }
 

@@ -35,6 +35,9 @@ func NewServiceServer(store ServiceStore, ch <-chan string) *ServiceServer {
     router.Handle("/", http.HandlerFunc(service.statusHandler))
     service.Handler = router
     router.Handle("/updates", http.HandlerFunc(service.updateHandler))
+    //define themes file server
+    fs := http.FileServer(http.Dir("themes"))
+    router.Handle("/themes/", http.StripPrefix("/themes/", fs))
 
     return service
 }
@@ -42,7 +45,6 @@ func NewServiceServer(store ServiceStore, ch <-chan string) *ServiceServer {
 
 func (server *ServiceServer) statusHandler(w http.ResponseWriter, r *http.Request){
     w.Header().Set("Content-Type", "text/html")
-
     StatusTemplate(server.store, w)
 }
 

@@ -14,33 +14,27 @@ func StatusTemplate(store ServiceStore, w http.ResponseWriter) {
     <html>
     <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Status Page</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>Status Page</title> 
+    <link rel = "stylesheet" href="/themes/classic.css">
     <script src="https://unpkg.com/htmx.org@1.9.6"></script>
-
-    </head>
+    
     <body>
     <h1>Services</h1>
-    <table>
-        <tr style='text-align: left'>
-        <th> Service</th>
-        <th> Status</th>
-        <th> Address</th>
-        </tr>
+    <div class = "container">
     {{range .}}
-    <tr>
-        <td>{{.Name}}</td>
-        <td>
+    <div class = "card"> 
+        <div class =
             {{ if .Status}}
-                "UP"
+                "status online"
             {{else}}
-                "DOWN"
+                "status offline"
             {{end}}
-        </td>
-        <td><a href='{{.Address}}'>{{.Address}}</a></td>
+            ></div>
+        <div class = "service">{{.Name}}</div>
+    </div>
     {{end}}
-    </tr>
-    </table>
+    </div>
     
 <!-- Display real-time updates here -->
 <div id="card1" hx-get="/update-card1">Initial content for Card 1</div>
