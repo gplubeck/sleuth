@@ -1,0 +1,51 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #282828;
+    color: #ebdbb2; /* Gruvbox foreground color */
+    padding: 20px;
+}
+
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.card {
+    background-color: #3c3836; /* Gruvbox background color */
+    display: flex;
+    align-items: center;
+    border-radius: 5px;
+    width: calc(33.33% - 20px);
+    margin-bottom: 20px;
+    padding: 10px;
+    
+}
+
+.service{
+    font-wight: bold;
+    /*background-color: #504945; 
+    margin-bottom: 8px;
+    padding: 10px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: ;
+    */
+    
+}
+
+.status {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.online {
+    background-color: #83a598; /* Gruvbox green */
+}
+
+.offline {
+    background-color: red;
+}
+
+
