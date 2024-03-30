@@ -13,13 +13,21 @@ body {
 
 .card {
     background-color: #3c3836; /* Gruvbox background color */
+    border-radius: 10px;
     display: flex;
     align-items: center;
     border-radius: 5px;
     width: calc(33.33% - 20px);
     margin-bottom: 20px;
     padding: 10px;
+    box-shadow: 0 4px 6px(0, 0, 0, 0.1);
+    transition: transform 0.3s ease-in-out;
+    flex-grow: 1;
     
+}
+
+.card:hover {
+    transform: translateY(-5px);
 }
 
 .service{
@@ -46,6 +54,22 @@ body {
 
 .offline {
     background-color: red;
+}
+
+
+/*Attempting to handle different screen sizes */
+
+/* Additional styles for responsiveness */
+@media screen and (max-width: 768px) {
+    .card {
+        width: calc(50% - 20px);
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .card {
+        width: calc(100% - 20px);
+    }
 }
 
 
