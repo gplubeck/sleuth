@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"sync"
 	"time"
 )
 
@@ -28,36 +30,55 @@ func Scheduler(services ServiceStore){
 */
 
 
-func Scheduler(services ServiceStore, channel chan<- string){
+type EventData struct {
+    Counter int `json:"counter"`
+}
+
+func Scheduler(services ServiceStore, channel chan<- []byte){
+   
+    var wg sync.WaitGroup
+    wg.Add(len(*services.GetServices()))
+
+    fmt.Println("Starting go routines.")
+    servicesSlice := services.GetServices()
+    for _, service := range *servicesSlice{ 
+
+        go monitorService(service, channel)
+
+    }
+
+    wg.Wait()
+    fmt.Println("all cleaned up.")
+}
+
+func monitorService(service Service, channel chan<- []byte){
+
     for {
-        servicesSlice := services.GetServices()
-
-        for i, service := range *servicesSlice{ 
-            fmt.Println("test1")
-            s := service
-
-            go func (s Service){
-                resp := s.getStatus()
-                if (resp.Status){
-                    fmt.Println(s.Name+" is up!")
-                    (*servicesSlice)[i].Status = true
-                }else{
-                    fmt.Println(s.Name+" currently down.")
-                    (*servicesSlice)[i].Status = false 
-                }
-            }(s)
-
-            serviceUpdate := service.String()
-            channel <- serviceUpdate 
-
-            
-            //simulate sending data
-            //message := []byte("hello from channel")
-            //channel <- message 
-            //time.Now().Format(time.RFC3339)
-            time.Sleep(2*time.Second)
+        response := service.getStatus()
+        service.Status = response.Status
+        service.lastUpdate= response.timestamp
+        update, err := json.Marshal(service)
+        if err != nil {
+            //NEED TO ADD LOG MESSAGE
+            fmt.Println("Error marshalling JSON: ", err)
+            continue
         }
-            fmt.Println("test")
+        channel <- update 
+        time.Sleep(time.Duration(service.timer) * time.Second)
     }
 }
 
+/*
+    for {
+        servicesSlice := services.GetServices()
+
+        for _, service := range *servicesSlice{ 
+            fmt.Println("test1")
+            data, err := json.Marshal(service)
+            if err != nil {
+                fmt.Println("Error marshalling JSON: ", err)
+                continue
+            }
+            channel <- data
+        }
+        */

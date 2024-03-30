@@ -7,12 +7,13 @@ import (
 )
 
 type Service struct {
-    Name string `json:"name"`
+    Name string `json:"service_name"`
     Address string `json:"address"`//maybe should eventual be its own IP/FQDN type
     Protocol Protocol `json:"protocol"`//interface to allow for Strategy Pattern and future expansion
-    Start time.Time //`json:"startTime`
-    lastUpdate time.Time // `json:"lastUpdate"`
+    Start time.Time //`json:"start_time`
+    lastUpdate time.Time // `json:"update_time"`
     Status bool `json:"status"`
+    timer int
     Failed []response 
 }
 

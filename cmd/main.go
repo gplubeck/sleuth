@@ -17,6 +17,7 @@ func main () {
         Protocol: &TCPProtocol{},
         Start: time.Now(),
         Status: false,
+        timer: 5,
     }
 
     //must have colon address! need to check for this.
@@ -26,6 +27,7 @@ func main () {
         Protocol: &UDPProtocol{},
         Start: time.Now(),
         Status: false,
+        timer: 3,
     }
 
 
@@ -34,7 +36,7 @@ func main () {
     store.AddService(git)
     store.AddService(notes)
 
-    updateChannel := make(chan string)
+    updateChannel := make(chan []byte)
 
     //start scheduler
     go Scheduler(store, updateChannel)

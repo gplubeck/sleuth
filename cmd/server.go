@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 )
 
 /*************************************************
@@ -22,10 +23,10 @@ type ServiceServer struct {
     http.Handler
     
     //channel for json updates
-    channel <-chan string 
+    channel <-chan []byte 
 }
 
-func NewServiceServer(store ServiceStore, ch <-chan string) *ServiceServer {
+func NewServiceServer(store ServiceStore, ch <-chan []byte) *ServiceServer {
     service := new(ServiceServer)
     service.store = store
 
@@ -48,6 +49,7 @@ func (server *ServiceServer) statusHandler(w http.ResponseWriter, r *http.Reques
     StatusTemplate(server.store, w)
 }
 
+
 func (server *ServiceServer) updateHandler(w http.ResponseWriter, r *http.Request){
     w.Header().Set("Content-Type", "text/event-stream")
     w.Header().Set("Cache-Control", "no-cache")
@@ -60,18 +62,35 @@ func (server *ServiceServer) updateHandler(w http.ResponseWriter, r *http.Reques
     //create conect for handling client disconnect
     _, cancel := context.WithCancel(r.Context())
     defer cancel()
+        
+    // Initialize counter
+        // Infinite loop to send events every second
+for{
+                // Send event
+                eventData:= <-server.channel
+
+                fmt.Fprintf(w, "data: %s\n\n", eventData)
+                w.(http.Flusher).Flush() // Flush the response writer to send the event immediately
+
+                // Delay for one second before sending the next event
+                time.Sleep(1 * time.Second)
+            }
 
     //send data
-    go func() {
-        //for data := range server.channel{
-        serviceUpdate := <-server.channel
+    /*go func() {
+        //for  serviceUpdate := range server.channel{
+            //serviceUpdate := <-server.channel
             //channel is receiveing event: service.Name
             // data: new div
-            fmt.Fprintf(w, "%s", serviceUpdate)
+            serviceUpdate := `{"counter": "1"}`
+            
+            //fmt.Fprintf(w, `data: {"service_name":"help"}\n\n`)
+            fmt.Fprintf(w, "data: %s\n\n", serviceUpdate)
             w.(http.Flusher).Flush()
-            fmt.Printf("%s", serviceUpdate)
+            fmt.Printf("Update: %s", serviceUpdate)
+        //}
     }()
-
+*/
     /*simulate sending data
     for {
         updates <- time.Now().Format(time.RFC3339)
@@ -79,5 +98,5 @@ func (server *ServiceServer) updateHandler(w http.ResponseWriter, r *http.Reques
     }
     */
 
-}
 
+}
