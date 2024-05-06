@@ -14,6 +14,7 @@ func main () {
     git := Service{
         Name: "Gitea",
         Address: "git.grant:3000",
+        Link: "http://git.grant:3000",
         Protocol: &TCPProtocol{},
         Start: time.Now(),
         Status: false,
@@ -24,6 +25,7 @@ func main () {
     notes := Service{
         Name: "Notes Page",
         Address: "notes.gplubeck.com:443",
+        Link: "https://notes.gplubeck.com",
         Protocol: &UDPProtocol{},
         Start: time.Now(),
         Status: false,
@@ -34,6 +36,7 @@ func main () {
     homepage := Service{
         Name: "Homepage",
         Address: "gplubeck.com:443",
+        Link: "https://gplubeck.com:443",
         Protocol: &UDPProtocol{},
         Start: time.Now(),
         Status: false,
@@ -43,6 +46,7 @@ func main () {
     google := Service{
         Name: "Google",
         Address: "8.8.8.8",
+        Link: "https://google.com",
         Protocol: &TCPProtocol{},
         Start: time.Now(),
         Status: false,

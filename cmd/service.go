@@ -9,6 +9,7 @@ import (
 type Service struct {
     Name string `json:"service_name"`
     Address string `json:"address"`//maybe should eventual be its own IP/FQDN type
+    Link string `json:"link"` //used for onclick functionality must provide http:// or https:// if left blank, no link
     Protocol Protocol `json:"protocol"`//interface to allow for Strategy Pattern and future expansion
     Start time.Time //`json:"start_time`
     lastUpdate time.Time // `json:"update_time"`

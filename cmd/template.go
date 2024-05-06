@@ -23,18 +23,21 @@ func StatusTemplate(store ServiceStore, w http.ResponseWriter) {
     <h1>Service Status</h1>
     <div class= "services"> 
     {{range .}}
-    <div class = "card" id={{.Name}}> 
-        <div class  =
-            {{ if .Status}}
-                "status online"
-            {{else}}
-                "status offline"
-            {{end}}
+    <div class = "card" id={{.Name}}
+        {{if .Link }}
+        onclick="window.location.href='{{.Link}}'" 
+        {{end}}>
+            <div class  =
+                {{ if .Status}}
+                    "status online"
+                {{else}}
+                    "status offline"
+                {{end}}
             ></div>
-        <div class = "service">{{.Name}}</div>
-    </div>
+            <div class = "service">{{.Name}}</div>
+            </a>
+        </div>
     {{end}}
-    </div>
     </div>
 
     </body>
