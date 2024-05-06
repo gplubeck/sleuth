@@ -4,6 +4,9 @@ h1 {
 
 body {
     font-family: Arial, sans-serif;
+    background-image: url('../assets/clock_blur.png');
+    background-size: cover;
+    background-repeat: no repeat;
     background-color: #282828;
     color: #ebdbb2; /* Gruvbox foreground color */
     padding: 20px;
