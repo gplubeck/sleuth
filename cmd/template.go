@@ -21,7 +21,7 @@ func StatusTemplate(store ServiceStore, w http.ResponseWriter) {
     </head>
     <body>
     <h1>Service Status</h1>
-    
+    <div class= "services"> 
     {{range .}}
     <div class = "card" id={{.Name}}> 
         <div class  =
@@ -34,6 +34,7 @@ func StatusTemplate(store ServiceStore, w http.ResponseWriter) {
         <div class = "service">{{.Name}}</div>
     </div>
     {{end}}
+    </div>
     </div>
 
     </body>

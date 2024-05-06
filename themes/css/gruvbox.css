@@ -1,3 +1,7 @@
+h1 {
+    text-align: center;
+}
+
 body {
     font-family: Arial, sans-serif;
     background-color: #282828;
@@ -15,15 +19,21 @@ body {
     background-color: #3c3836; /* Gruvbox background color */
     border-radius: 10px;
     display: flex;
-    align-items: center;
     border-radius: 5px;
-    width: calc(33.33% - 20px);
-    margin-bottom: 20px;
+    margin: 20px;
     padding: 10px;
     box-shadow: 0 4px 6px(0, 0, 0, 0.1);
     transition: transform 0.3s ease-in-out;
     flex-grow: 1;
-    
+    flex-shrink: 1;
+    max-width: 255px;
+}
+
+.services {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
 .card:hover {
@@ -32,13 +42,6 @@ body {
 
 .service{
     font-wight: bold;
-    /*background-color: #504945; 
-    margin-bottom: 8px;
-    padding: 10px;
-    border-top-left-radius: 5px;
-    border-top-right-radius: ;
-    */
-    
 }
 
 .status {
@@ -61,15 +64,23 @@ body {
 
 /* Additional styles for responsiveness */
 @media screen and (max-width: 768px) {
-    .card {
-        width: calc(50% - 20px);
+    .services {
+        justify-content: center;
     }
+    .card {
+        flex-basis: calc(20% - 20px);
+        max-width: 200px;
+    }
+    
 }
 
 @media screen and (max-width: 480px) {
+    .services {
+        justify-content: center;
+    }
     .card {
-        width: calc(100% - 20px);
+        flex-basis: calc(33% - 30px);
+        max-width: 150px;
     }
 }
-
 

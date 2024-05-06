@@ -29,12 +29,43 @@ func main () {
         Status: false,
         timer: 3,
     }
+    
+    //must have colon address! need to check for this.
+    homepage := Service{
+        Name: "Homepage",
+        Address: "gplubeck.com:443",
+        Protocol: &UDPProtocol{},
+        Start: time.Now(),
+        Status: false,
+        timer: 3,
+    }
+    
+    google := Service{
+        Name: "Google",
+        Address: "8.8.8.8",
+        Protocol: &TCPProtocol{},
+        Start: time.Now(),
+        Status: false,
+        timer: 3,
+    }
+    
+    fake := Service{
+        Name: "Down Service",
+        Address: "8.8.8.8",
+        Protocol: &TCPProtocol{},
+        Start: time.Now(),
+        Status: false,
+        timer: 3,
+    }
 
 
     //mock memory store
     store := NewInMemoryStore()
     store.AddService(git)
     store.AddService(notes)
+    store.AddService(homepage)
+    store.AddService(google)
+    store.AddService(fake)
 
     updateChannel := make(chan []byte)
 
