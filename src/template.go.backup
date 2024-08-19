@@ -1,0 +1,87 @@
+package main
+
+import (
+	"html/template"
+	"net/http"
+)
+
+func StatusTemplate(store ServiceStore, w http.ResponseWriter) {
+
+    services := store.GetServices()
+
+    tmpl := `
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>Status Page</title> 
+    <link rel = "stylesheet" href="/themes/classic.css">
+    </head> 
+    <body>
+    <h1>Services</h1>
+    <div class = "container">
+    <script>
+    function initSSE(){
+        const eventSource = new EventSource("/updates");
+
+        //event listener
+        eventSource.onmessage = function(update){
+        const data = JSON.parse(update.data);
+        console.log("Update received: ", data);
+
+        //Update UI 
+        updateCard(data);
+    };
+    
+    //error listener
+    eventSource.onerror = function(error){
+        console.error("SSE Error:", error);
+        eventSource.close();
+    };
+
+    function updateCard(serviceStatus){
+        const statusContainer = document.getElementById("container");
+        let serviceCard = document.getElementById(serviceStatus.service_name);
+
+        serviceCard.innerHTML = "<div>${serviceStatus.status}></div><div>${serviceStatus.service_name}</div>";
+   }
+   window.onload = initSSE;
+   </script>
+
+
+
+
+    {{range .}}
+    <div class = "card"> 
+        <div class =
+            {{ if .Status}}
+                "status online"
+            {{else}}
+                "status offline"
+            {{end}}
+            ></div>
+        <div class = "service">{{.Name}}</div>
+    </div>
+    {{end}}
+    </div>
+<!-- Display real-time updates here -->
+<div id = "replace" hx-sse="/updates"> test </div>
+</body>
+</html>
+    
+
+`
+    t, err := template.New("services").Parse(tmpl)
+    if err != nil {
+        panic (err)
+    }
+
+    err = t.Execute(w, services)
+    if err != nil {
+        panic(err)
+    }
+
+}
+
+

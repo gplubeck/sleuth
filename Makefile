@@ -1,7 +1,7 @@
 #Makefile for StatSleuth golang project
 
 #PACKAGES = $(shell go list ./...)
-PACKAGE_DIR = cmd/
+PACKAGE_DIR = src/
 RUN= *.go
 PACKAGE = cmd/main.go
 BUILD_DIR ?= $(CURDIR)/bins

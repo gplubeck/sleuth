@@ -1,15 +1,15 @@
 package main
 
 import (
-    "html/template"
-    "net/http"
+	"html/template"
+	"net/http"
 )
 
 func StatusTemplate(store ServiceStore, w http.ResponseWriter) {
 
-    services := store.GetServices()
+	services := store.GetServices()
 
-    tmpl := `
+	tmpl := `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -35,6 +35,7 @@ func StatusTemplate(store ServiceStore, w http.ResponseWriter) {
                 {{end}}
             ></div>
             <div class = "service">{{.Name}}</div>
+            <div class = "uptime"><p>Uptime: {{printf "%.2f" .Uptime}}% </p></div>
             </a>
         </div>
     {{end}}
@@ -43,16 +44,14 @@ func StatusTemplate(store ServiceStore, w http.ResponseWriter) {
     </body>
     </html>
     `
-    t, err := template.New("services").Parse(tmpl)
-    if err != nil {
-        panic (err)
-    }
+	t, err := template.New("services").Parse(tmpl)
+	if err != nil {
+		panic(err)
+	}
 
-    err = t.Execute(w, services)
-    if err != nil {
-        panic(err)
-    }
+	err = t.Execute(w, services)
+	if err != nil {
+		panic(err)
+	}
 
 }
-
-

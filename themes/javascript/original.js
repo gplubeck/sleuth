@@ -4,7 +4,9 @@
             var eventData = JSON.parse(event.data);
             var card = document.getElementById(eventData.service_name);
             //var card = document.getElementById(eventData.service_name).innerText = eventData.address;
+            //grab the elements with respective classes
             var status = card.querySelector(".status");
+            var uptime = card.querySelector(".uptime");
 
             //status online
             if(eventData.status){
@@ -12,6 +14,11 @@
             }else{
                 status.classList.replace("online", "offline");
             }
+
+            if(eventData.uptime){
+                uptime.innerText = eventData.uptime;
+            }
+            
         }
     }
 
