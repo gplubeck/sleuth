@@ -1,23 +1,30 @@
 #Makefile for StatSleuth golang project
+GOCMD=go
+GOBUILD=$(GOCMD) build
+GOTEST=$(GOCMD) test 
+GOCLEAN=$(GOCMD) clean
+GOGET=$(GOCMD) get
 
-#PACKAGES = $(shell go list ./...)
-PACKAGE_DIR = src/
-RUN= *.go
-PACKAGE = cmd/main.go
-BUILD_DIR ?= $(CURDIR)/bins
-OUTPUT ?= sleuth 
+SRC_FILES= main.go in_memory_store.go server.go service.go scheduler.go
+SRC= $(addprefix src/, $(SRC_FILES))
 
-CGO_ENABLED ?= 0
+# Binary name
+BINARY_NAME=slueth
 
-all: build test install
+.PHONY: all build test clean run
 
-.PHONY: all build test install
+all: build test 
 
 build:
-	go build $(BUILD_FLAGS) -o $(BUILD_DIR)/$(OUTPUT)  $(PACKAGE)
+	$(GOBUILD) -o bin/$(BINARY_NAME) $(SRC)
+
+test:
+	$(GOTEST) -v ./...
+
+clean:
+	$(GOCLEAN)
+	rm -f bin/$(BINARY_NAME)
 
 run:
-	go run $(BUILD_FLAGS) $(PACKAGE_DIR)$(RUN)
-
-install:
-	go install $(BUILD_DIR)/$(OUTPUT)
+	@make build
+	bin/$(BINARY_NAME)

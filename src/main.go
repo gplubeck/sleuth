@@ -82,6 +82,8 @@ func main() {
 
 	//start server
 	server := NewServiceServer(store, updateChannel)
+    log.Printf("Starting Service Sleuth Server version: %s")
+    log.Printf("Listening on port%s", port)
 	log.Fatal(http.ListenAndServe(port, server))
 
 }
