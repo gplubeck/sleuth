@@ -82,8 +82,15 @@ func main() {
 
 	//start server
 	server := NewServiceServer(store, updateChannel)
+    mux := http.NewServeMux()
+    server.addRoutes(mux)
     log.Printf("Starting Service Sleuth Server version: %s")
     log.Printf("Listening on port%s", port)
-	log.Fatal(http.ListenAndServe(port, server))
+    log.Printf("server %q", server)
+
+    err := http.ListenAndServe(port, mux)
+    if err != nil {
+        log.Fatalf("Failed server state.  Error: %s", err)
+    }
 
 }

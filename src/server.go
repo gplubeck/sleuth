@@ -39,11 +39,7 @@ func(s* ServiceServer) addRoutes(mux *http.ServeMux){
 func NewServiceServer(store ServiceStore, ch <-chan []byte) *ServiceServer {
 	server:= new(ServiceServer)
 	server.store = store
-
 	server.channel = ch
-
-	router := http.NewServeMux()
-    server.addRoutes(router)
 
 	return server
 }
