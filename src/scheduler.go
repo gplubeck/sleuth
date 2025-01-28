@@ -19,9 +19,7 @@ func Scheduler(services ServiceStore, channel chan<- []byte) {
 	log.Println("Starting go routines.")
 	servicesSlice := services.GetServices()
 	for _, service := range *servicesSlice {
-
 		go monitorService(service, channel)
-
 	}
 
 	wg.Wait()
@@ -39,6 +37,7 @@ func monitorService(service Service, channel chan<- []byte) {
         }
 
         service.getUptime()
+        log.Printf("Service: %+v", service)
 
 		update, err := json.Marshal(service)
 		if err != nil {

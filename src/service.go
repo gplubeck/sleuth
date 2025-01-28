@@ -8,6 +8,7 @@ import (
 )
 
 type Service struct {
+    ID          uint    `json:"id"`
     Name       string    `json:"service_name"`
     Address    string    `json:"address"`  //maybe should eventual be its own IP/FQDN type
     Link       string    `json:"link"`     //used for onclick functionality must provide http:// or https:// if left blank, no link
@@ -19,7 +20,9 @@ type Service struct {
     timer      int  // how often to check service in seconds
     timeWindow int  //time window for calculating uptime in days
     itersPerWindow int  //number of timer iterations time window 
+    Icon    string // name of icon to use from /assets/icons
     Failed     []response
+    History     []response `json:"uptime_history"`
 }
 
 /*****************************************
@@ -46,6 +49,7 @@ func (u *UDPProtocol) Connect(address string, timeout time.Duration) (net.Conn, 
 }
 
 // Generic unimplemented type to allow for future growth
+// Use for implementing things like Githubs health check
 type HTTPProtocol struct{}
 
 func (h *HTTPProtocol) Connect(address string, timout time.Duration) (net.Conn, error) {
@@ -78,7 +82,6 @@ func (service *Service) getStatus() response {
 
 	return resp
 }
-
 
 
 /******************************************************
@@ -124,19 +127,3 @@ func (service *Service) String() string {
 	element := fmt.Sprintf("id: %d\nevent: %s\ndata: <div>%s</div>\n\n", 1, service.Name, service.Name)
 	return element
 }
-
-/*
-func  (service *Service) String() string{
-    element := fmt.Sprintf(`event: %s
-    data: <tr> <td>%s</td>
-        <td>
-           %t
-        </td>
-        <td><a href='%s'>%s</a></td>
-        </tr>
-`, service.Name, service.Name, service.Status, service.Address, service.Address)
-
-    return element
-
-}
-*/

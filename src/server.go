@@ -19,11 +19,11 @@ import (
 type ServiceStore interface {
 	AddService(service Service)
 	GetServices() *[]Service
+    EventUpdate([]byte)
 }
 
 type ServiceServer struct {
 	store ServiceStore
-	//store InMemoryStore
 	http.Handler
 
 	//channel for json updates
@@ -33,6 +33,7 @@ type ServiceServer struct {
 func(s* ServiceServer) addRoutes(mux *http.ServeMux){
     mux.HandleFunc("/", s.statusHandler)
     mux.HandleFunc("/updates", s.updateHandler)
+    //resources
     mux.HandleFunc("/static/{type}/{file}", s.static)
 }
 
@@ -45,21 +46,31 @@ func NewServiceServer(store ServiceStore, ch <-chan []byte) *ServiceServer {
 }
 
 func (server *ServiceServer) statusHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
 
     switch r.Method {
     case http.MethodGet:
+        w.Header().Set("Content-Type", "text/html")
         log.Printf("Inside get for template")
         tmpl, err := template.New("homepage.gohtml").Funcs(template.FuncMap{
-            "formatTime": formatTime}).ParseFiles("static/templates/homepage.gohtml")
+            "formatTime": formatTime}).ParseFiles("static/templates/layout.gohtml",
+                "static/templates/homepage.gohtml")
 
             if err != nil {
                 log.Printf("Failed to parse homepage template: %s", err)
                 http.Error(w, err.Error(), http.StatusInternalServerError)
                 return
             }
+
             services := server.store.GetServices()
-            err = tmpl.Execute(w, services)
+            //log.Printf("Services sent: %+q", services)
+            err = tmpl.ExecuteTemplate(w, "layout", services)
+            if err != nil {
+                log.Printf("Failed to parse homepage template: %s", err)
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+            }
+
+
     default:
         http.Error(w, "Invalid Method", http.StatusMethodNotAllowed)
     }
@@ -73,17 +84,26 @@ func (server *ServiceServer) static(w http.ResponseWriter, r *http.Request) {
 
     file, err := os.Open("static/" + filetype + "/" + asset)
     if err != nil {
-        log.Printf("Failed to serve static file %s. Error: ", asset, err.Error)
+        log.Printf("Failed to serve static file %s. Error: %s ", asset, err)
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
     defer file.Close()
 
-	w.Header().Set("Content-Type", "text/html")
+    switch filetype {
+    case "javascript":
+	    w.Header().Set("Content-Type", "application/javascript")
+    
+    case "css":
+	    w.Header().Set("Content-Type", "text/css")
+
+    default:
+	    w.Header().Set("Content-Type", "text/html")
+    }
 
     _, err = io.Copy(w, file)
     if err != nil {
-        log.Printf("Failed to copy static file %s. Error: ", asset, err.Error)
+        log.Printf("Failed to copy static file %s. Error: %s", asset, err)
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
@@ -95,12 +115,12 @@ func (server *ServiceServer) updateHandler(w http.ResponseWriter, r *http.Reques
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
+	w.(http.Flusher).Flush()
 
-	//create conect for handling client disconnect
+	//create context for handling client disconnect
 	_, cancel := context.WithCancel(r.Context())
 	defer cancel()
 
-	// Initialize counter
 	// Infinite loop to send events every second
 	for {
 		// Send event
@@ -108,13 +128,15 @@ func (server *ServiceServer) updateHandler(w http.ResponseWriter, r *http.Reques
 
 		fmt.Fprintf(w, "data: %s\n\n", eventData)
 		w.(http.Flusher).Flush() // Flush the response writer to send the event immediately
+        
+        // should also update server.store
+        server.store.EventUpdate(eventData)
 
 		// Delay for one second before sending the next event
 		//time.Sleep(1 * time.Second)
 	}
 
 }
-
 
 func formatTime(t time.Time) string {
     return t.Format("2006-01-02 15:04:05")

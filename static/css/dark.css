@@ -1,0 +1,137 @@
+/* Global Dark Theme */
+body {
+    background-color: #121212; /* Deep dark background */
+    color: #eaeaea; /* Light gray for general text */
+}
+
+header {
+    color: #ffffff; /* White for header text */
+}
+
+.text-muted {
+    color: #a0a0a0 !important; /* Softer muted text */
+}
+
+/* Service Card */
+.service-card {
+    background-color: #1f1f1f; /* Slightly lighter dark */
+    border: 1px solid #333333; /* Subtle border */
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+    transition: box-shadow 0.3s ease-in-out, background-color 0.3s ease-in-out;
+}
+
+.service-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    background-color: #2b2b2b; /* Slightly brighter hover effect */
+}
+
+/* Service Header */
+.service-header {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background-color: #292929; /* Dark header for contrast */
+    border-bottom: 1px solid #444444;
+}
+
+.service-header img {
+    width: 50px;
+    height: 50px;
+    margin-right: 1rem;
+    border-radius: 50%;
+    border: 2px solid #555555;
+}
+
+/* Status Indicators */
+.status-indicator {
+    font-weight: bold;
+    text-transform: capitalize;
+}
+
+.status-online {
+    color: #4caf50; /* Bright green for "Online" */
+}
+
+.status-offline {
+    color: #e57373; /* Soft red for "Offline" */
+}
+
+.status-pending {
+    color: #ffd54f; /* Yellow for "Pending" */
+}
+
+/* Service Body */
+.service-body {
+    padding: 1rem;
+}
+
+.service-body p {
+    margin-bottom: 0.5rem;
+    color: #cccccc; /* Light gray for secondary text */
+}
+
+/* Links and Buttons */
+a {
+    color: #64b5f6; /* Bright blue for links */
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+a:hover {
+    color: #82cfff; /* Lighter blue on hover */
+}
+
+button {
+    background-color: #4caf50; /* Green button */
+    color: #ffffff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+}
+
+button:hover {
+    background-color: #66bb6a; /* Lighter green on hover */
+}
+
+/* Uptime Graph Container */
+.uptime-graph-container {
+    width: 100%;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.25rem;
+    background-color: #2a2a2a; /* Slightly lighter for graph contrast */
+    margin-top: 0.5rem;
+}
+
+.uptime-segment {
+    height: 100%;
+    flex-grow: 1;
+    transition: all 0.3s ease-in-out;
+}
+
+.uptime-segment.green {
+    background-color: #66bb6a; /* Vibrant green for uptime */
+}
+
+.uptime-segment.yellow {
+    background-color: #ffd54f; /* Bright yellow for warning */
+}
+
+.uptime-segment.red {
+    background-color: #e57373; /* Soft red for errors */
+}
+
+/* Time Labels */
+.time-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    color: #b0b0b0; /* Muted light gray */
+}

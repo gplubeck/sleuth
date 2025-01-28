@@ -1,6 +1,8 @@
 package main
 
 import (
+//	"encoding/json"
+//	"log"
 	"sync"
 )
 
@@ -23,4 +25,9 @@ func (i *InMemoryStore) AddService(service Service) {
 	i.Lock()
 	i.store = append(i.store, service)
 	i.Unlock()
+}
+
+func (i *InMemoryStore) EventUpdate(eventData []byte) {
+
+
 }
