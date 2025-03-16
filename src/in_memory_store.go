@@ -2,9 +2,7 @@ package main
 
 import (
 	//	"encoding/json"
-	"encoding/json"
 	"errors"
-	"log"
 	"log/slog"
 	"sync"
 )
@@ -42,16 +40,9 @@ func (i *InMemoryStore) GetServiceByID(id uint) (*Service, error) {
     return nil, errors.New("Unable to get service.")
 }
 
-func (i *InMemoryStore) EventUpdate(eventData []byte) error {
+func (i *InMemoryStore) EventUpdate(event EventData) error {
 
-    var event EventData
-    err := json.Unmarshal(eventData, &event)
-
-    if err != nil {
-        slog.Error("Unable to handle event update.", "Error", err)
-    }
-
-    _, err = i.GetServiceByID(event.ServiceID)
+    _, err := i.GetServiceByID(event.ServiceID)
     if err != nil {
         return err
     }
@@ -64,18 +55,10 @@ func (i *InMemoryStore) EventUpdate(eventData []byte) error {
             i.store[idx].Status = event.Status
             i.store[idx].History = append(i.store[idx].History, event)
             i.store[idx].Uptime = i.store[idx].getUptime()
-            log.Printf("updated: %v", i.store[idx])
+            slog.Debug("Updating service", "service",  i.store[idx])
             break
         }
     }
-
-    /*
-    service.LastUpdate = event.Timestamp
-    service.Status = event.Status
-    service.History = append(service.History, event)
-    service.Uptime = service.getUptime()
-    log.Printf("ServiceID: %d\n uptime: %f+", service.ID, service.Uptime)
-    */
 
     return nil
 

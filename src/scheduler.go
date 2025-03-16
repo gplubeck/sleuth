@@ -2,7 +2,8 @@ package main
 
 import (
 	"encoding/json"
-    "log"
+	"log"
+	"log/slog"
 	"sync"
 	"time"
 )
@@ -39,10 +40,12 @@ func monitorService(service Service, channel chan<- []byte) {
 
 		update, err := json.Marshal(event)
 		if err != nil {
-			log.Println("Error marshalling JSON: ", err)
+			slog.Error("Error marshalling JSON. ", "error", err)
 			continue
 		}
+        slog.Debug("Before send.", "service", event.ServiceID)
 		channel <- update
+        slog.Debug("Update Sent.", "service", event.ServiceID)
 		time.Sleep(time.Duration(service.Timer) * time.Second)
 	}
 }

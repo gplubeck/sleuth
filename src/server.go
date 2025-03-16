@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"time"
@@ -17,9 +19,10 @@ import (
 *************************************************/
 
 type ServiceStore interface {
-	AddService(service Service)
+	AddService(Service)
 	GetServices() *[]Service
-    EventUpdate([]byte) error
+	GetServiceByID(uint) (*Service, error)
+    EventUpdate(EventData) error
 }
 
 type Server struct {
@@ -27,7 +30,6 @@ type Server struct {
     Cert_key string `toml:"cert_key"`
     Cert_file string `toml:"cert_file"`
     LogLevel string `toml:"log_level"`
-
 
 	store ServiceStore
 	http.Handler
@@ -58,6 +60,7 @@ func (server *Server) statusHandler(w http.ResponseWriter, r *http.Request) {
         w.Header().Set("Content-Type", "text/html")
         tmpl, err := template.New("homepage.gohtml").Funcs(template.FuncMap{
             "formatTime": formatTime}).ParseFiles("static/templates/layout.gohtml",
+                "static/templates/header.gohtml",
                 "static/templates/homepage.gohtml")
 
             if err != nil {
@@ -126,16 +129,28 @@ func (server *Server) updateHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Infinite loop to send events every second
 	for {
-		// Send event
+		// pop event
+        slog.Debug("Preparing to receive from channel")
 		eventData := <-server.channel
+        slog.Debug("Update Received Server Side.", "event", eventData)
+        var event EventData
+        err := json.Unmarshal(eventData, &event)
+        if err != nil {
+            slog.Error("Unable to Unmarshal event update.", "Error", err)
+        }
+
         // update server.store
-        server.store.EventUpdate(eventData)
-        //fmt.Printf("%v", server.store)
+        err = server.store.EventUpdate(event)
+        if err != nil {
+            slog.Error("Unable to handle event update.", "Error", err)
+        }
 
-        // send event
-		fmt.Fprintf(w, "data: %s\n\n", eventData)
+        // send to html elements to subscribers 
+        service, err := server.store.GetServiceByID(event.ServiceID)
+        fmt.Fprintf(w, "event: service-%d\n", service.ID)
+		fmt.Fprintf(w, "data: %s\n\n", service.toHTML())
 		w.(http.Flusher).Flush() // Flush the response writer to send the event immediately
-
+        slog.Debug("Flushed Event from bus to subscribers.", "serviceID", service.ID, "html", service.toHTML())
 	}
 
 }

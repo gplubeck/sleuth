@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"errors"
-	"fmt"
+	"html/template"
 	"log"
+	"log/slog"
 	"math/rand"
 	"net"
 	"time"
@@ -157,7 +159,47 @@ func (service *Service) getUptime() float64 {
 /*********************************************************
 * Used to return string that should be used as html content
 ***********************************************************/
-func (service *Service) String() string {
-	element := fmt.Sprintf("id: %d\nevent: %s\ndata: <div>%s</div>\n\n", 1, service.Name, service.Name)
-	return element
+func (service *Service) toHTML() string {
+
+    templateStr := service.templateStr()
+    tmpl, err := template.New("serviceElement").Parse(templateStr)
+    if err != nil {
+        slog.Error("Unable to create parse template.", "service", service.ID, "error", err.Error())
+    }
+
+    var tmplOutput bytes.Buffer
+    err = tmpl.Execute(&tmplOutput, service)
+
+	return tmplOutput.String()
+}
+
+func (service *Service) templateStr() string {
+    template := `
+<div class="card service-card" id="service-{{.ID}}" sse-swap="service-{{.ID}}">
+    <div class="service-header">
+        {{if .Icon}}
+            <img src="/assets/icons/{{.Icon}}" />
+        {{end}}
+        <div>
+            <h5 class="mb-0 title">{{ .Name }}</h5>
+            <span class="status-indicator {{ if .Status }}status-online{{ else }}status-offline{{ end }}">
+                {{ if .Status }}Online{{ else }}Offline{{ end }}
+            </span>
+        </div>
+    </div>
+    <div class="service-body">
+        <!-- Uptime Graph -->
+        <div class="uptime-graph-container">
+            {{range .History }}
+                <div class="uptime-segment {{if .Status }} green {{else}} red {{end}}" style="flex-grow: 1;"></div>
+            {{end}}
+        </div>
+        <div class="time-labels">
+            <span>Start</span><span>Now</span>
+        </div>
+        <p class="uptime-info"><strong>Uptime:</strong> {{printf "%.2f" .Uptime}}% </p>
+    </div>
+</div>`
+
+    return template
 }
