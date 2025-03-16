@@ -8,7 +8,7 @@ SRC_FILES= main.go config.go in_memory_store.go server.go service.go scheduler.g
 SRC= $(addprefix src/, $(SRC_FILES))
 
 # Binary name
-BINARY_NAME=slueth
+BINARY_NAME=sleuth
 BUILD_TIME := $(shell date "+%Y-%m-%d %H:%M:%S")
 
 .PHONY: all build test clean run help production

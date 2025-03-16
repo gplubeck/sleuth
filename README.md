@@ -1,9 +1,9 @@
 ## Sleuth
 
-Sleuth is a simple service monitoring application that is designed to be easy to get up and running and customize to your own liking.
+Sleuth is a simple service monitoring application that uses server side events to push out updates as each service has an update.  The project is designed to be easy to get up and running and customize to your own liking.
 
 ### Goals
-I made this project because of my need for a very simple service monitoring application and my desire to be exposed to a handful of new (to me) technologies. Below is a more direct listing of what I am hoping to accomplish.
+I made this project because of my desire for a very simple service monitoring application and my desire to be exposed to a handful of new (to me) technologies. Below is a more direct listing of what I am hoping to accomplish.
 
 Goals:
 1. Learn/practice Golang as I read through "The Go Programming Language"
@@ -13,6 +13,7 @@ Goals:
     d. Experiment with the package system (build and use an internal package)
 2. Get exposure to the web side of programming
     a. Test out HTMX
+    b. Different update strategies (e.g. sse events, ajax, etc)
     b. Trying theming with CSS Variables
     c. Learn some bootstrap
 3. Apply some Patterns as I re-read "Design Patterns"
@@ -30,7 +31,7 @@ Material Dark Theme
 1. Clone this repo.
 2. cd into sleuth
 3. Edit the config.toml to suit your needs
-3. run the command ```make run``` to try to it out. Or build the with ```make production``` then run with "./bin/slueth"
+3. run the command ```make run``` to try to it out. Or build the with ```make production``` then run with "./bin/sleuth"
 
 ---
 ### Ongoing Questions/ Things that "feel" wrong or bad
