@@ -3,6 +3,7 @@ port = 5000
 cert_file = "big-bubba.pem"
 cert_key = "big-bubba-key.pem"
 log_level = "Debug"
+theme = "dark_theme.css"
 
 [[service]]
 id = 4

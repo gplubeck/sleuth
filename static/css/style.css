@@ -1,0 +1,131 @@
+@import url('theme.css');
+html {
+    background-color: var(--background-color); /* Deep dark background */
+}
+body {
+    background-color: var(--background-color); /* Deep dark background */
+    /*color: #eaeaea; /* Light gray for general text */
+}
+
+.title {
+    color: var(--primary-text); /* Light gray for general text */
+}
+
+header {
+    color: var(--primary-text); /* White for header text */
+}
+
+.text-muted {
+    color: var(--text-muted) !important; /* Softer muted text */
+}
+
+/* Service Card */
+.service-card {
+    background-color: var(--service-card-background); /* Slightly lighter dark */
+    border: var(--service-card-border);
+    border-radius: var(--service-card-border-radius);
+    margin-bottom: var(--service-card-margin-bottom);
+}
+
+.service-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    background-color: var(--service-card-hover-color);
+}
+
+/* Service Header */
+.service-header {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background-color: var(--service-card-header-bg-color); /* Dark header for contrast */
+    border-bottom: var(service-card-border)
+    height: 70px;
+}
+
+.service-header img {
+    width: 50px;
+    height: 50px;
+    margin-right: 1rem;
+    border-radius: 50%;
+    border: var(--service-card-header-img-border);
+}
+
+/* Status Indicators */
+.status-indicator {
+    font-weight: bold;
+    text-transform: capitalize;
+}
+
+.status-online {
+    color: var(--status-online);
+}
+
+.status-offline {
+    color: var(--status-offline);
+}
+
+.status-pending {
+    color: var(--status-limited);
+}
+
+/* Service Body */
+.service-body {
+    padding: 1rem;
+}
+
+.service-body p {
+    margin-bottom: 0.5rem;
+    color: #cccccc; /* Light gray for secondary text */
+}
+
+/* Uptime Graph Container */
+.uptime-graph-container {
+    width: 100%;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.25rem;
+    background-color: #2a2a2a; /* Slightly lighter for graph contrast */
+    margin-top: 0.5rem;
+}
+
+
+.uptime-segment {
+    height: 100%;
+    flex-grow: 1;
+    transition: all 0.3s ease-in-out;
+}
+
+.uptime-segment.green {
+    background-color: var(--status-online); /* olive green for uptime */
+}
+
+.uptime-segment.yellow {
+    background-color: var(--status-limited);
+}
+
+.uptime-segment.red {
+    background-color: var(--status-offline);
+}
+
+/* Time Labels */
+.time-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--service-card-time-labels-color);
+}
+
+/* uptime percent */
+.uptime-info.green {
+    color: var(--status-online);
+}
+.uptime-info.yellow{
+    color: var(--status-limited);
+}
+.uptime-info.red{
+    color: var(--status-offline);
+}

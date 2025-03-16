@@ -1,0 +1,26 @@
+/* Material Dark Based Theme */
+:root {
+    --primary-text: #f5f5f5; /* Light off-white text for readability */
+    --text-muted: #b0b0b0; /* Muted gray text for less important info */
+    --background-color: #1d1f28; /* Dark background with slight blue tint for a modern look */
+
+    /* Status Colors */
+    --status-online: #28a745; /* Green for "Online" */
+    --status-offline: #dc3545; /* Red for "Offline" */
+    --status-degraded: #ffc107; /* Yellow for "Degraded" */
+    --status-maintenance: #6c757d; /* Gray for "Maintenance" */
+    --status-unknown: #6f42c1; /* Purple for "Unknown" or "Pending" */
+
+    /* Service Card info */
+    --service-card-background: #23272b; /* Dark gray background for service cards */
+    --service-card-border: 1px solid #3a3f47; /* Subtle border around cards */
+    --service-card-border-radius: 0.5rem;
+    --service-card-margin-bottom: 1.5rem;
+
+    --service-card-hover-color: #2a2f36; /* Darker background on hover */
+    --service-card-header-bg-color: #2c3139; /* Dark header background */
+    --service-card-header-img-border: 2px solid #3b4047; /* Light border around images */
+
+    --service-card-time-labels-color: #868e96; /* Light grayish text for time labels */
+}
+

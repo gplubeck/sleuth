@@ -1,0 +1,25 @@
+/* Global Dark Theme */
+:root {
+    --primary-text: #f8f8f8; /* light gray */
+    --text-muted: #a0a0a0;
+    --background-color: #121212; /* deep black */
+
+    /* Status Colors */
+    --status-online: #6b8e23;
+    --status-offline: #fa8072;
+    --status-limited: #ffd54f;
+
+    /* Service Card info */
+    --service-card-background: #1f1f1f;
+    --service-card-border: 1px solid #333333;
+    --service-card-border-radius: 0.5rem;
+    --service-card-margin-bottom: 1.5rem;
+    
+    --service-card-hover-color: #1b1b1b;
+    --service-card-header-bg-color: #292929;
+    --service-card-header-img-border: 2px solid #555555;
+
+    --service-card-time-labels-color: #b0b0b0;
+
+
+}

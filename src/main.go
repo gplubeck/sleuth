@@ -36,6 +36,7 @@ func main() {
     server.Cert_key = config.Server.Cert_key
     server.Cert_file = config.Server.Cert_file
     server.Port = config.Server.Port
+    server.Theme = config.Server.Theme
     mux := http.NewServeMux()
     server.addRoutes(mux)
     log.Printf("Starting Service Sleuth Server version: %s", Version)

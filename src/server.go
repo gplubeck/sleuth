@@ -31,6 +31,8 @@ type Server struct {
     Cert_file string `toml:"cert_file"`
     LogLevel string `toml:"log_level"`
 
+    Theme string `toml:"theme"`
+
 	store ServiceStore
 	http.Handler
 
@@ -62,23 +64,23 @@ func (server *Server) statusHandler(w http.ResponseWriter, r *http.Request) {
             "formatTime": formatTime,
             "getAllHistory": getAllHistory,
         }).ParseFiles("static/templates/layout.gohtml",
-                "static/templates/header.gohtml",
-                "static/templates/homepage.gohtml")
+        "static/templates/header.gohtml",
+        "static/templates/homepage.gohtml")
 
-            if err != nil {
-                log.Printf("Failed to parse homepage template: %s", err)
-                http.Error(w, err.Error(), http.StatusInternalServerError)
-                return
-            }
+        if err != nil {
+            log.Printf("Failed to parse homepage template: %s", err)
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
+        }
 
-            services := server.store.GetServices()
-            //log.Printf("Services sent: %+q", services)
-            err = tmpl.ExecuteTemplate(w, "layout", services)
-            if err != nil {
-                log.Printf("Failed to parse homepage template: %s", err)
-                http.Error(w, err.Error(), http.StatusInternalServerError)
-                return
-            }
+        services := server.store.GetServices()
+        //log.Printf("Services sent: %+q", services)
+        err = tmpl.ExecuteTemplate(w, "layout", services)
+        if err != nil {
+            log.Printf("Failed to parse homepage template: %s", err)
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
+        }
 
     default:
         http.Error(w, "Invalid Method", http.StatusMethodNotAllowed)
@@ -91,13 +93,6 @@ func (server *Server) static(w http.ResponseWriter, r *http.Request) {
     asset := r.PathValue("file")
     slog.Info("Serving file static asset.", filetype, "filetype", "asset", asset)
 
-    file, err := os.Open("static/" + filetype + "/" + asset)
-    if err != nil {
-        log.Printf("Failed to serve static file %s. Error: %s ", asset, err)
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-    defer file.Close()
 
     switch filetype {
     case "javascript":
@@ -105,10 +100,22 @@ func (server *Server) static(w http.ResponseWriter, r *http.Request) {
     
     case "css":
 	    w.Header().Set("Content-Type", "text/css")
+        // Must take care of switching for theme
+        if asset == "theme.css" {
+            asset = server.Theme
+        }
 
     default:
 	    w.Header().Set("Content-Type", "text/html")
     }
+    
+    file, err := os.Open("static/" + filetype + "/" + asset)
+    if err != nil {
+        log.Printf("Failed to serve static file %s. Error: %s ", asset, err)
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+    defer file.Close()
 
     _, err = io.Copy(w, file)
     if err != nil {
@@ -152,7 +159,6 @@ func (server *Server) updateHandler(w http.ResponseWriter, r *http.Request) {
         fmt.Fprintf(w, "event: service-%d\n", service.ID)
 		fmt.Fprintf(w, "data: %s\n\n", service.toHTML())
 		w.(http.Flusher).Flush() // Flush the response writer to send the event immediately
-        slog.Debug("Flushed Event from bus to subscribers.", "serviceID", service.ID, "html", service.toHTML())
 	}
 
 }
