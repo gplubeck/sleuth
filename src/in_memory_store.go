@@ -53,7 +53,7 @@ func (i *InMemoryStore) EventUpdate(event EventData) error {
         if service.ID == event.ServiceID { 
             i.store[idx].LastUpdate = event.Timestamp
             i.store[idx].Status = event.Status
-            i.store[idx].History = append(i.store[idx].History, event)
+            i.store[idx].History.Push(event)
             i.store[idx].Uptime = i.store[idx].getUptime()
             slog.Debug("Updating service", "service",  i.store[idx])
             break

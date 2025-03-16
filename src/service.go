@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"math/rand"
 	"net"
+	"sleuth/internal/ringbuffer"
 	"time"
 )
 
@@ -21,9 +22,10 @@ type Service struct {
     LastUpdate time.Time  `json:"update_time"`
     Status     bool      `json:"status"`
     Uptime  float64     `json:"uptime"`
-    Timer      int  // how often to check service in seconds
-    Icon    string // name of icon to use from /assets/icons
-    History     []EventData `json:"uptime_history"`
+    Timer      int  //how often to check service in seconds
+    Icon    string //name of icon to use from /assets/icons
+    History     ringbuffer.RingBuffer[EventData] `json:"uptime_history"`
+    MaxHistorySize int //number of Events to hold
 }
 
 /*****************************************
@@ -48,7 +50,6 @@ func NewProtocol(protocol string) Protocol {
         return nil
     }
 }
-
 
 type TCPProtocol struct{
     Protocol string 
@@ -142,13 +143,13 @@ func (service *Service) getUptime() float64 {
     var success float64
 
 
-    for _, event := range service.History {
+    for _, event := range service.History.GetAll() {
         if event.Status{
             success++
         }
     }
 
-    uptime = (success/float64(len(service.History)) * 100)
+    uptime = (success/float64(service.History.Size()) * 100)
     return uptime
 
 }
@@ -159,7 +160,9 @@ func (service *Service) getUptime() float64 {
 func (service *Service) toHTML() string {
 
     templateStr := service.templateStr()
-    tmpl, err := template.New("serviceElement").Parse(templateStr)
+    tmpl, err := template.New("serviceElement").Funcs(template.FuncMap{
+        "getAllHistory": getAllHistory,
+    }).Parse(templateStr)
     if err != nil {
         slog.Error("Unable to create parse template.", "service", service.ID, "error", err.Error())
     }
@@ -171,6 +174,11 @@ func (service *Service) toHTML() string {
 }
 
 func (service *Service) templateStr() string {
-    template := `<div class="service-header"> {{if .Icon}} <img src="/assets/icons/{{.Icon}}" /> {{end}} <div> <h5 class="mb-0 title">{{ .Name }}</h5> <span class="status-indicator {{ if .Status }}status-online{{ else }}status-offline{{ end }}"> {{ if .Status }}Online{{ else }}Offline{{ end }} </span> </div> </div> <div class="service-body"> <!-- Uptime Graph --> <div class="uptime-graph-container"> {{range .History }} <div class="uptime-segment {{if .Status }} green {{else}} red {{end}}" style="flex-grow: 1;"></div> {{end}} </div> <div class="time-labels"> <span>Start</span><span>Now</span> </div> <p class="uptime-info"><strong>Uptime:</strong> {{printf "%.2f" .Uptime}}% </p> </div> </div>`
+    template := `<div class="service-header"> {{if .Icon}} <img src="/assets/icons/{{.Icon}}" /> {{end}} <div> <h5 class="mb-0 title">{{ .Name }}</h5> <span class="status-indicator {{ if .Status }}status-online{{ else }}status-offline{{ end }}"> {{ if .Status }}Online{{ else }}Offline{{ end }} </span> </div> </div> <div class="service-body"> <!-- Uptime Graph --> <div class="uptime-graph-container"> {{range getAllHistory .History}} <div class="uptime-segment {{if .Status }} green {{else}} red {{end}}" style="flex-grow: 1;"></div> {{end}} </div> <div class="time-labels"> <span>Start</span><span>Now</span> </div> <p class="uptime-info"><strong>Uptime:</strong> {{printf "%.2f" .Uptime}}% </p> </div> </div>`
     return template
+}
+
+// func for templates to range
+func getAllHistory(buffer ringbuffer.RingBuffer[EventData]) []EventData{
+    return buffer.GetAll()
 }

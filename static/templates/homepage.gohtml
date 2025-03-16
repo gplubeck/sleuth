@@ -27,7 +27,7 @@
                     <div class="service-body">
                         <!-- Uptime Graph -->
                         <div class="uptime-graph-container">
-                            {{range .History }}
+                            {{range getAllHistory .History }}
                             <div class="uptime-segment {{if .Status }} green {{else}} red {{end}}" style="flex-grow: 1;"></div>
                             {{end}}
                         </div>

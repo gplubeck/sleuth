@@ -59,7 +59,9 @@ func (server *Server) statusHandler(w http.ResponseWriter, r *http.Request) {
     case http.MethodGet:
         w.Header().Set("Content-Type", "text/html")
         tmpl, err := template.New("homepage.gohtml").Funcs(template.FuncMap{
-            "formatTime": formatTime}).ParseFiles("static/templates/layout.gohtml",
+            "formatTime": formatTime,
+            "getAllHistory": getAllHistory,
+        }).ParseFiles("static/templates/layout.gohtml",
                 "static/templates/header.gohtml",
                 "static/templates/homepage.gohtml")
 

@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"log/slog"
+	"sleuth/internal/ringbuffer"
 	"strings"
 	"time"
 
@@ -28,6 +29,11 @@ func parseConfigs(configFile string) Config {
         config.Services[i].Protocol = NewProtocol(service.ProtocolString)
         config.Services[i].Start = time.Now()
         slog.Debug("Parsed service.", "service", service)
+        maxSize := config.Services[i].MaxHistorySize
+        if maxSize == 0 {
+            maxSize = 100
+        }
+        config.Services[i].History = ringbuffer.NewRingBuffer[EventData](maxSize)
     }
 
     return config
