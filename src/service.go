@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"html/template"
-	"log"
 	"log/slog"
 	"math/rand"
 	"net"
@@ -139,7 +138,6 @@ func (service *Service) getStatus() response {
 * than 1 full window, the total time running
 *******************************************************/
 func (service *Service) getUptime() float64 {
-    log.Printf("%s uptime function %q", service.Name, service)
     var uptime float64
     var success float64
 
@@ -151,14 +149,13 @@ func (service *Service) getUptime() float64 {
     }
 
     uptime = (success/float64(len(service.History)) * 100)
-    
     return uptime
 
 }
 
-/*********************************************************
-* Used to return string that should be used as html content
-***********************************************************/
+/*************************************************************
+* Used to return string that will be used to swap html content
+*************************************************************/
 func (service *Service) toHTML() string {
 
     templateStr := service.templateStr()
@@ -174,32 +171,6 @@ func (service *Service) toHTML() string {
 }
 
 func (service *Service) templateStr() string {
-    template := `
-<div class="card service-card" id="service-{{.ID}}" sse-swap="service-{{.ID}}">
-    <div class="service-header">
-        {{if .Icon}}
-            <img src="/assets/icons/{{.Icon}}" />
-        {{end}}
-        <div>
-            <h5 class="mb-0 title">{{ .Name }}</h5>
-            <span class="status-indicator {{ if .Status }}status-online{{ else }}status-offline{{ end }}">
-                {{ if .Status }}Online{{ else }}Offline{{ end }}
-            </span>
-        </div>
-    </div>
-    <div class="service-body">
-        <!-- Uptime Graph -->
-        <div class="uptime-graph-container">
-            {{range .History }}
-                <div class="uptime-segment {{if .Status }} green {{else}} red {{end}}" style="flex-grow: 1;"></div>
-            {{end}}
-        </div>
-        <div class="time-labels">
-            <span>Start</span><span>Now</span>
-        </div>
-        <p class="uptime-info"><strong>Uptime:</strong> {{printf "%.2f" .Uptime}}% </p>
-    </div>
-</div>`
-
+    template := `<div class="service-header"> {{if .Icon}} <img src="/assets/icons/{{.Icon}}" /> {{end}} <div> <h5 class="mb-0 title">{{ .Name }}</h5> <span class="status-indicator {{ if .Status }}status-online{{ else }}status-offline{{ end }}"> {{ if .Status }}Online{{ else }}Offline{{ end }} </span> </div> </div> <div class="service-body"> <!-- Uptime Graph --> <div class="uptime-graph-container"> {{range .History }} <div class="uptime-segment {{if .Status }} green {{else}} red {{end}}" style="flex-grow: 1;"></div> {{end}} </div> <div class="time-labels"> <span>Start</span><span>Now</span> </div> <p class="uptime-info"><strong>Uptime:</strong> {{printf "%.2f" .Uptime}}% </p> </div> </div>`
     return template
 }

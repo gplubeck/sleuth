@@ -10,7 +10,6 @@ name = "DownService"
 address = "8.8.8.8"
 protocol_str= "TCP"  # This would map to the TCPProtocol struct, though you could expand the struct to add more fields.
 start = "2025-03-15T10:00:00Z"
-status = false
 timer = 30
 
 [[service]]
@@ -18,7 +17,6 @@ id = 5
 name = "TestService"
 address = "8.8.8.8"
 protocol_str= "Test"  # This would map to the TCPProtocol struct, though you could expand the struct to add more fields.
-status = false
 timer = 5
 
 [[service]]
