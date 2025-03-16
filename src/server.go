@@ -89,7 +89,7 @@ func (server *Server) statusHandler(w http.ResponseWriter, r *http.Request) {
 func (server *Server) static(w http.ResponseWriter, r *http.Request) {
     filetype := r.PathValue("type")
     asset := r.PathValue("file")
-    log.Printf("Serving file %s/%s", filetype, asset)
+    slog.Info("Serving file static asset.", filetype, "filetype", "asset", asset)
 
     file, err := os.Open("static/" + filetype + "/" + asset)
     if err != nil {

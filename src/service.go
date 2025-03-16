@@ -174,7 +174,7 @@ func (service *Service) toHTML() string {
 }
 
 func (service *Service) templateStr() string {
-    template := `<div class="service-header"> {{if .Icon}} <img src="/assets/icons/{{.Icon}}" /> {{end}} <div> <h5 class="mb-0 title">{{ .Name }}</h5> <span class="status-indicator {{ if .Status }}status-online{{ else }}status-offline{{ end }}"> {{ if .Status }}Online{{ else }}Offline{{ end }} </span> </div> </div> <div class="service-body"> <!-- Uptime Graph --> <div class="uptime-graph-container"> {{range getAllHistory .History}} <div class="uptime-segment {{if .Status }} green {{else}} red {{end}}" style="flex-grow: 1;"></div> {{end}} </div> <div class="time-labels"> <span>Start</span><span>Now</span> </div> <p class="uptime-info"><strong>Uptime:</strong> {{printf "%.2f" .Uptime}}% </p> </div> </div>`
+    template := `<div class="service-header"> {{if .Icon}} <img src="/assets/{{.Icon}}" /> {{end}} <div> <h5 class="mb-0 title">{{ .Name }}</h5> <span class="status-indicator {{ if .Status }}status-online{{ else }}status-offline{{ end }}"> {{ if .Status }}Online{{ else }}Offline{{ end }} </span> </div> </div> <div class="service-body"> <!-- Uptime Graph --> <div class="uptime-graph-container"> {{range getAllHistory .History}} <div class="uptime-segment {{if .Status }} green {{else}} red {{end}}" style="flex-grow: 1;"></div> {{end}} </div> <div class="time-labels"> <span>Start</span><span>Now</span> </div> <p class="uptime-info"><strong>Uptime:</strong> {{printf "%.2f" .Uptime}}% </p> </div> </div>`
     return template
 }
 

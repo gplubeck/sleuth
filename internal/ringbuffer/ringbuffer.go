@@ -47,6 +47,18 @@ func (r *RingBuffer[T]) Pop() (T, bool) {
     return value, true
 }
 
+// return oldest element from ring buff without removing from buffer
+func (r *RingBuffer[T]) Peak() (T, bool) {
+    // If buffer empty, return a zero value of T and false
+    if r.head == r.tail && !r.isFull {
+        var zeroValue T
+        return zeroValue, false
+    }
+
+    value := r.data[r.tail]
+    return value, true
+}
+
 // return all element in order for things like range loops
 func (r *RingBuffer[T]) GetAll() []T {
     var result []T

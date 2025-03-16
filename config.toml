@@ -23,8 +23,11 @@ timer = 5
 id = 0
 name = "Gitea"
 address = "gitea.gplubeck.com:3000"
+link = "https://gitea.gplubeck.com"
 protocol_str= "TCP"  # This would map to the TCPProtocol struct, though you could expand the struct to add more fields.
+icon = "gitea_logo.svg"
 timer = 30
+MaxHistory = 50
 
 [[service]]
 id = 1
