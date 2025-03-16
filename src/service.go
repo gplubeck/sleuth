@@ -12,19 +12,19 @@ import (
 )
 
 type Service struct {
-    ID          uint    `json:"id"`
-    Name       string    `json:"service_name"`
-    Address    string    `json:"address"`  //maybe should eventual be its own IP/FQDN type
-    Link       string    `json:"link"`     //used for onclick functionality must provide http:// or https:// if left blank, no link
-    Protocol   Protocol  `json:"protocol"` //interface to allow for Strategy Pattern and future expansion
+    ID          uint    `toml:"id"`
+    Name       string    `toml:"service_name"`
+    Address    string    `toml:"address"`  //maybe should eventual be its own IP/FQDN type
+    Link       string    `toml:"link"`     //used for onclick functionality must provide http:// or https:// if left blank, no link
+    Protocol   Protocol  `toml:"protocol"` //interface to allow for Strategy Pattern and future expansion
     ProtocolString string `toml:"protocol_str"`
-    Start      time.Time `json:"start_time"`
-    LastUpdate time.Time  `json:"update_time"`
-    Status     bool      `json:"status"`
-    Uptime  float64     `json:"uptime"`
+    Start      time.Time `toml:"start_time"`
+    LastUpdate time.Time  `toml:"update_time"`
+    Status     bool      `toml:"status"`
+    Uptime  float64     `toml:"uptime"`
     Timer      int  //how often to check service in seconds
     Icon    string //name of icon to use from /assets/icons
-    History     ringbuffer.RingBuffer[EventData] `json:"uptime_history"`
+    History     ringbuffer.RingBuffer[EventData] `toml:"uptime_history"`
     MaxHistorySize int //number of Events to hold
 }
 

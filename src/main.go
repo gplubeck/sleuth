@@ -41,10 +41,18 @@ func main() {
     log.Printf("Starting Service Sleuth Server version: %s", Version)
     log.Printf("Build Time: %s", BuildTime)
     log.Printf("Listening on port: %d", server.Port)
+    slog.Debug("Server cert files", "key", server.Cert_key, "cert", server.Cert_file)
 
     go func() {
+        var err error
         port := fmt.Sprintf(":%d", server.Port)
-        err := http.ListenAndServe(port, mux)
+        if (server.Cert_file != "" && server.Cert_key != "") {
+            slog.Info("Starting TLS Server.")
+            err = http.ListenAndServeTLS(port, server.Cert_file, server.Cert_key, mux)
+        } else {
+            slog.Warn("Starting Plaintext Server.")
+            err = http.ListenAndServe(port, mux)
+        }
         if err != nil {
             log.Fatalf("Failed server state.  Error: %s", err)
         }
@@ -61,6 +69,9 @@ func main() {
                 case syscall.SIGINT, syscall.SIGTERM:
                     log.Printf("Received signal %s. Cleaning up....", sig)
                     os.Exit(0)
+                case syscall.SIGHUP:
+                    log.Printf("Received signal %s. Reload configs.", sig)
+                    log.Printf("Oh wait... Reminder to implement this.")
                 default:
                     log.Printf("%s caught, but not yet implemented.", sig)
                 }

@@ -1,7 +1,7 @@
 [server]
 port = 5000
-cert_file = ""
-key_file = ""
+cert_file = "big-bubba.pem"
+cert_key = "big-bubba-key.pem"
 log_level = "Debug"
 
 [[service]]
