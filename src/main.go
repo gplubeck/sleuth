@@ -19,7 +19,10 @@ func main() {
     slog.SetLogLoggerLevel(getLogLevel(config.Server.LogLevel))
 
 	//mock memory store
-	store := NewInMemoryStore()
+    store, err := NewServiceStore(config.Server.Storage)
+    if err != nil {
+        log.Fatalf("Unable to intialize storage. Error: %s", err)
+    }
 
     for _, service := range config.Services {
         store.AddService(service)

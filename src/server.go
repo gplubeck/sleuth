@@ -25,11 +25,23 @@ type ServiceStore interface {
     EventUpdate(EventData) error
 }
 
+func NewServiceStore(storageType string) (ServiceStore, error) {
+    switch storageType {
+    case "memory":
+        return NewInMemoryStore()
+    case "sqlite":
+        return nil, fmt.Errorf("sqlite memory not yet implemented.")
+    default:
+        return nil, fmt.Errorf("Unkown storage type \"%s\".", storageType)
+    }
+}
+
 type Server struct {
     Port int `toml:"port"`
     Cert_key string `toml:"cert_key"`
     Cert_file string `toml:"cert_file"`
     LogLevel string `toml:"log_level"`
+    Storage string `toml:"storage_type"`
 
     Theme string `toml:"theme"`
 

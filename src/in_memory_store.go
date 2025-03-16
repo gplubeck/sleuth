@@ -12,10 +12,10 @@ type InMemoryStore struct {
 	store      []Service
 }
 
-func NewInMemoryStore() *InMemoryStore {
+func NewInMemoryStore() (*InMemoryStore, error) {
 	i := new(InMemoryStore)
 	i.store = []Service{}
-	return i
+	return i, nil
 }
 
 func (i *InMemoryStore) GetServices() *[]Service {
