@@ -8,7 +8,9 @@ import (
 )
 
 type EventData struct {
-	Counter int `json:"counter"`
+	ServiceID uint `json:"serviceID"`
+    Status bool `json:"status"`
+    Timestamp time.Time `json:"timestamp"`
 }
 
 func Scheduler(services ServiceStore, channel chan<- []byte) {
@@ -29,22 +31,18 @@ func Scheduler(services ServiceStore, channel chan<- []byte) {
 func monitorService(service Service, channel chan<- []byte) {
 
 	for {
-		response := service.getStatus()
-		service.Status = response.Status
-		service.LastUpdate = response.timestamp
-        if !response.Status {
-            service.Failed = append(service.Failed, response)
-        }
+        var event EventData
+        response := service.getStatus()
+		event.Status = response.Status
+		event.Timestamp = response.timestamp
+        event.ServiceID = service.ID
 
-        service.getUptime()
-        log.Printf("Service: %+v", service)
-
-		update, err := json.Marshal(service)
+		update, err := json.Marshal(event)
 		if err != nil {
 			log.Println("Error marshalling JSON: ", err)
 			continue
 		}
 		channel <- update
-		time.Sleep(time.Duration(service.timer) * time.Second)
+		time.Sleep(time.Duration(service.Timer) * time.Second)
 	}
 }

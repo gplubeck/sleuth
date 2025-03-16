@@ -19,10 +19,16 @@ import (
 type ServiceStore interface {
 	AddService(service Service)
 	GetServices() *[]Service
-    EventUpdate([]byte)
+    EventUpdate([]byte) error
 }
 
-type ServiceServer struct {
+type Server struct {
+    Port int `toml:"port"`
+    Cert_key string `toml:"cert_key"`
+    Cert_file string `toml:"cert_file"`
+    LogLevel string `toml:"log_level"`
+
+
 	store ServiceStore
 	http.Handler
 
@@ -30,27 +36,26 @@ type ServiceServer struct {
 	channel <-chan []byte
 }
 
-func(s* ServiceServer) addRoutes(mux *http.ServeMux){
+func(s* Server) addRoutes(mux *http.ServeMux){
     mux.HandleFunc("/", s.statusHandler)
     mux.HandleFunc("/updates", s.updateHandler)
     //resources
     mux.HandleFunc("/static/{type}/{file}", s.static)
 }
 
-func NewServiceServer(store ServiceStore, ch <-chan []byte) *ServiceServer {
-	server:= new(ServiceServer)
+func NewServer(store ServiceStore, ch <-chan []byte) *Server {
+	server:= new(Server)
 	server.store = store
 	server.channel = ch
 
 	return server
 }
 
-func (server *ServiceServer) statusHandler(w http.ResponseWriter, r *http.Request) {
+func (server *Server) statusHandler(w http.ResponseWriter, r *http.Request) {
 
     switch r.Method {
     case http.MethodGet:
         w.Header().Set("Content-Type", "text/html")
-        log.Printf("Inside get for template")
         tmpl, err := template.New("homepage.gohtml").Funcs(template.FuncMap{
             "formatTime": formatTime}).ParseFiles("static/templates/layout.gohtml",
                 "static/templates/homepage.gohtml")
@@ -70,14 +75,13 @@ func (server *ServiceServer) statusHandler(w http.ResponseWriter, r *http.Reques
                 return
             }
 
-
     default:
         http.Error(w, "Invalid Method", http.StatusMethodNotAllowed)
     }
 
 }
 
-func (server *ServiceServer) static(w http.ResponseWriter, r *http.Request) {
+func (server *Server) static(w http.ResponseWriter, r *http.Request) {
     filetype := r.PathValue("type")
     asset := r.PathValue("file")
     log.Printf("Serving file %s/%s", filetype, asset)
@@ -110,8 +114,7 @@ func (server *ServiceServer) static(w http.ResponseWriter, r *http.Request) {
 
 }
 
-
-func (server *ServiceServer) updateHandler(w http.ResponseWriter, r *http.Request) {
+func (server *Server) updateHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
@@ -125,15 +128,14 @@ func (server *ServiceServer) updateHandler(w http.ResponseWriter, r *http.Reques
 	for {
 		// Send event
 		eventData := <-server.channel
+        // update server.store
+        server.store.EventUpdate(eventData)
+        //fmt.Printf("%v", server.store)
 
+        // send event
 		fmt.Fprintf(w, "data: %s\n\n", eventData)
 		w.(http.Flusher).Flush() // Flush the response writer to send the event immediately
-        
-        // should also update server.store
-        server.store.EventUpdate(eventData)
 
-		// Delay for one second before sending the next event
-		//time.Sleep(1 * time.Second)
 	}
 
 }

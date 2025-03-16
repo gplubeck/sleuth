@@ -21,14 +21,15 @@ document.addEventListener("DOMContentLoaded", function () {
         // update status
         const statusIndicator = card.querySelector(".status-indicator");
         statusIndicator.textContent = data.status ? "Online" : "Offline";
+        statusIndicator.className = "status-indicator " + (data.status ? "status-online" : "status-offline");
 
         // Update uptime
-        const uptimeElement = card.querySelector("p:contains('Uptime:')");
+        const uptimeElement = card.querySelector(".uptime-info")
         uptimeElement.innerHTML = `<strong>Uptime:</strong> ${data.uptime.toFixed(1)}%`;
 
         // Update uptime graph
         const graphContainer = card.querySelector(".uptime-graph-container");
-        graphContainer.innerHTML = data.uptimeHistory
+        graphContainer.innerHTML = data.uptime_history
             .map(
                 uptime =>
                 `<div class="uptime-segment ${uptime >= 90 ? "green" : uptime >= 75 ? "yellow" : "red"}" style="flex-grow: 1;"></div>`
@@ -41,7 +42,6 @@ document.addEventListener("DOMContentLoaded", function () {
             // Add the new uptime data with a timestamp
             const currentTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
             service.graphData.push({ time: currentTime, value: data.uptime });
-
         }
     }
 

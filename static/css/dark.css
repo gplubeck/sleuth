@@ -4,6 +4,10 @@ body {
     color: #eaeaea; /* Light gray for general text */
 }
 
+.title {
+    color: #ffffff !important; /* Light gray for general text */
+}
+
 header {
     color: #ffffff; /* White for header text */
 }

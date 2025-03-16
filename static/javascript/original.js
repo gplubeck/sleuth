@@ -2,7 +2,7 @@
     function handleSSE(event) {
         if (event.data) {
             var eventData = JSON.parse(event.data);
-            var card = document.getElementById(eventData.service_name);
+            var card = document.getElementById(eventData.id);
             //var card = document.getElementById(eventData.service_name).innerText = eventData.address;
             //grab the elements with respective classes
             var status = card.querySelector(".status");

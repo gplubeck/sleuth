@@ -1,8 +1,10 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
+	"math/rand"
 	"net"
 	"time"
 )
@@ -13,16 +15,14 @@ type Service struct {
     Address    string    `json:"address"`  //maybe should eventual be its own IP/FQDN type
     Link       string    `json:"link"`     //used for onclick functionality must provide http:// or https:// if left blank, no link
     Protocol   Protocol  `json:"protocol"` //interface to allow for Strategy Pattern and future expansion
-    Start      time.Time //`json:"start_time`
+    ProtocolString string `toml:"protocol_str"`
+    Start      time.Time `json:"start_time"`
     LastUpdate time.Time  `json:"update_time"`
     Status     bool      `json:"status"`
     Uptime  float64     `json:"uptime"`
-    timer      int  // how often to check service in seconds
-    timeWindow int  //time window for calculating uptime in days
-    itersPerWindow int  //number of timer iterations time window 
+    Timer      int  // how often to check service in seconds
     Icon    string // name of icon to use from /assets/icons
-    Failed     []response
-    History     []response `json:"uptime_history"`
+    History     []EventData `json:"uptime_history"`
 }
 
 /*****************************************
@@ -31,17 +31,44 @@ type Service struct {
 const SECONDS_PER_DAY = 86400
 
 type Protocol interface {
+    String() string
 	Connect(address string, timeout time.Duration) (net.Conn, error)
 }
 
-type TCPProtocol struct{}
+func NewProtocol(protocol string) Protocol {
+    switch protocol {
+    case "TCP":
+        return &TCPProtocol{Protocol: "TCP"}
+    case "UDP":
+        return &UDPProtocol{Protocol: "UDP"}
+    case "Test":
+        return &TestProtocol{Protocol: "Test"}
+    default:
+        return nil
+    }
+}
+
+
+type TCPProtocol struct{
+    Protocol string 
+}
+
+func (t *TCPProtocol) String() string{
+    return t.Protocol
+}
 
 // create TCP connection
 func (t *TCPProtocol) Connect(address string, timeout time.Duration) (net.Conn, error) {
 	return net.DialTimeout("tcp", address, timeout)
 }
 
-type UDPProtocol struct{}
+type UDPProtocol struct{
+    Protocol string
+}
+
+func (u *UDPProtocol) String() string{
+    return u.Protocol
+}
 
 // create UDP connection
 func (u *UDPProtocol) Connect(address string, timeout time.Duration) (net.Conn, error) {
@@ -55,6 +82,24 @@ type HTTPProtocol struct{}
 func (h *HTTPProtocol) Connect(address string, timout time.Duration) (net.Conn, error) {
 	//stubbed interface not yet implemented
 	return nil, nil
+}
+
+type TestProtocol struct {
+    Protocol string 
+}
+
+func (t *TestProtocol) String() string{
+    return t.Protocol
+}
+
+func (t *TestProtocol) Connect(address string, timeout time.Duration) (net.Conn, error) {
+    
+    test := rand.Intn(2) == 0
+    if test {
+        return nil, nil
+    }
+    return nil, errors.New("Random failure")
+
 }
 
 /**************************************
@@ -77,7 +122,9 @@ func (service *Service) getStatus() response {
 	} else {
 		resp.Status = true
 		//defer in here because conn.Close on an error will segfault
-		defer conn.Close()
+        if conn != nil {
+            defer conn.Close()
+        }
 	}
 
 	return resp
@@ -92,30 +139,17 @@ func (service *Service) getStatus() response {
 func (service *Service) getUptime() float64 {
     log.Printf("%s uptime function %q", service.Name, service)
     var uptime float64
+    var success float64
 
-    if service.itersPerWindow == 0 {
-        service.itersPerWindow = (SECONDS_PER_DAY * service.timeWindow) / service.timer
-    }
 
-    current := time.Now()
-    totalTime := current.Sub(service.Start)
-    totalIters := int( totalTime.Seconds() / float64(service.timer))
-
-    if totalIters == 0 {
-        if service.Status{
-            service.Uptime = 100
-        }else{
-            service.Uptime = 0
+    for _, event := range service.History {
+        if event.Status{
+            success++
         }
-    }else if totalIters < service.itersPerWindow {
-        uptime = 100 - ( float64(len(service.Failed) / totalIters) )
-    }else {
-        uptime = 100 - ( float64(len(service.Failed) / service.itersPerWindow) )
     }
 
-    service.Uptime = uptime
-    log.Printf("%s uptime %f after %d iterations.", service.Name, service.Uptime, totalIters)
-
+    uptime = (success/float64(len(service.History)) * 100)
+    
     return uptime
 
 }

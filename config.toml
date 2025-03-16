@@ -1,0 +1,38 @@
+[server]
+port = 5000
+cert_file = ""
+key_file = ""
+log_level = "Debug"
+
+[[service]]
+id = 4
+name = "DownService"
+address = "8.8.8.8"
+protocol_str= "TCP"  # This would map to the TCPProtocol struct, though you could expand the struct to add more fields.
+start = "2025-03-15T10:00:00Z"
+status = false
+timer = 30
+
+[[service]]
+id = 5
+name = "TestService"
+address = "8.8.8.8"
+protocol_str= "Test"  # This would map to the TCPProtocol struct, though you could expand the struct to add more fields.
+status = false
+timer = 5
+
+[[service]]
+id = 0
+name = "Gitea"
+address = "gitea.gplubeck.com:3000"
+protocol_str= "TCP"  # This would map to the TCPProtocol struct, though you could expand the struct to add more fields.
+timer = 30
+
+[[service]]
+id = 1
+name = "NotesPage"
+address = "notes.gplubeck.com:443"
+link = "https://notes.gplubeck.com"
+protocol_str= "TCP"  # This would map to the TCPProtocol struct, though you could expand the struct to add more fields.
+timer = 30
+
