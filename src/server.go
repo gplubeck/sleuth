@@ -151,19 +151,12 @@ func (server *Server) updateHandler(w http.ResponseWriter, r *http.Request) {
 	// Infinite loop to send events every second
 	for {
 		// pop event
-        slog.Debug("Preparing to receive from channel")
 		eventData := <-server.channel
         slog.Debug("Update Received Server Side.", "event", eventData)
         var event EventData
         err := json.Unmarshal(eventData, &event)
         if err != nil {
             slog.Error("Unable to Unmarshal event update.", "Error", err)
-        }
-
-        // update server.store
-        err = server.store.EventUpdate(event)
-        if err != nil {
-            slog.Error("Unable to handle event update.", "Error", err)
         }
 
         // send to html elements to subscribers 

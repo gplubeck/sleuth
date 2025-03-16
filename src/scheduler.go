@@ -14,22 +14,43 @@ type EventData struct {
     Timestamp time.Time `json:"timestamp"`
 }
 
-func Scheduler(services ServiceStore, channel chan<- []byte) {
+func Scheduler(store ServiceStore, channel chan<- []byte) {
 
 	var wg sync.WaitGroup
-	wg.Add(len(*services.GetServices()))
+	wg.Add(len(*store.GetServices()))
 
 	log.Println("Starting go routines.")
-	servicesSlice := services.GetServices()
+
+    eventBus := make(chan []byte)
+
+	servicesSlice := store.GetServices()
 	for _, service := range *servicesSlice {
-		go monitorService(service, channel)
+		go monitorService(service, eventBus)
 	}
 
-	wg.Wait()
-	log.Printf("All %d services cleaned up.", len(*services.GetServices()))
+    for {
+        eventData := <-eventBus
+        var event EventData
+        err := json.Unmarshal(eventData, &event)
+        if err != nil {
+            slog.Error("Unable to Unmarshal event update.", "Error", err)
+        }
+
+        // update server.store
+        err = store.EventUpdate(event)
+        if err != nil {
+            slog.Error("Unable to handle event update.", "Error", err)
+        }
+
+        //send event to server to distribute to active connections
+		channel <- eventData 
+    }
+
+	//wg.Wait()
+	//log.Printf("All %d services cleaned up.", len(*store.GetServices()))
 }
 
-func monitorService(service Service, channel chan<- []byte) {
+func monitorService(service Service, eventBus chan<- []byte) {
 
 	for {
         var event EventData
@@ -43,9 +64,7 @@ func monitorService(service Service, channel chan<- []byte) {
 			slog.Error("Error marshalling JSON. ", "error", err)
 			continue
 		}
-        slog.Debug("Before send.", "service", event.ServiceID)
-		channel <- update
-        slog.Debug("Update Sent.", "service", event.ServiceID)
+		eventBus <- update
 		time.Sleep(time.Duration(service.Timer) * time.Second)
 	}
 }
