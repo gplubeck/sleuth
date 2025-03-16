@@ -18,7 +18,7 @@
                         <img src="static/assets/{{.Icon}}" />
                         {{end}}
                         <div>
-                            <h5 class="mb-0 title">{{ .Name }}</h5>
+                            <h5 class="mb-0 title">{{.Name }}</h5>
                             <span class="status-indicator {{ if .Status }}status-online{{ else }}status-offline{{ end }}">
                                 {{ if .Status }}Online{{ else }}Offline{{ end }}
                             </span>
@@ -34,7 +34,11 @@
                         <div class="time-labels">
                             <span>Start</span><span>Now</span>
                         </div>
-                        <p class="uptime-info"><strong>Uptime:</strong> {{printf "%.2f" .Uptime}}% </p>
+                        <p ><strong>Uptime:</strong>
+                            <span class="uptime-info {{if gt .Uptime 90.0}} green {{else if gt .Uptime 79.0}} yellow {{else}} red {{end}}">
+                            {{printf "%.2f" .Uptime}}%
+                            </span>
+                        </p>
                     </div>
                 </div>
             </div>

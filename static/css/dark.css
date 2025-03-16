@@ -5,11 +5,11 @@ body {
 }
 
 .title {
-    color: #ffffff !important; /* Light gray for general text */
+    color: #f8f8f8 !important; /* Light gray for general text */
 }
 
 header {
-    color: #ffffff; /* White for header text */
+    color: #f8f8f8; /* White for header text */
 }
 
 .text-muted {
@@ -37,6 +37,7 @@ header {
     padding: 1rem;
     background-color: #292929; /* Dark header for contrast */
     border-bottom: 1px solid #444444;
+    height: 70px;
 }
 
 .service-header img {
@@ -54,11 +55,11 @@ header {
 }
 
 .status-online {
-    color: #4caf50; /* Bright green for "Online" */
+    color: #6b8e23; /* olive green for "Online" */
 }
 
 .status-offline {
-    color: #e57373; /* Soft red for "Offline" */
+    color: #fa8072; /* Soft red for "Offline" */
 }
 
 .status-pending {
@@ -113,6 +114,7 @@ button:hover {
     margin-top: 0.5rem;
 }
 
+
 .uptime-segment {
     height: 100%;
     flex-grow: 1;
@@ -120,7 +122,7 @@ button:hover {
 }
 
 .uptime-segment.green {
-    background-color: #66bb6a; /* Vibrant green for uptime */
+    background-color: #6b8e23; /* olive green for uptime */
 }
 
 .uptime-segment.yellow {
@@ -128,7 +130,7 @@ button:hover {
 }
 
 .uptime-segment.red {
-    background-color: #e57373; /* Soft red for errors */
+    background-color: #fa8072; /* Soft red for errors */
 }
 
 /* Time Labels */
@@ -138,4 +140,14 @@ button:hover {
     margin-top: 0.5rem;
     font-size: 0.75rem;
     color: #b0b0b0; /* Muted light gray */
+}
+/* uptime percent */
+.uptime-info.green {
+    color: #6b8e23; /* olive green for uptime */
+}
+.uptime-info.yellow{
+    color: #ffd54f; /* yellow for uptime */
+}
+.uptime-info.red{
+    color: #fa8072; /* yellow for uptime */
 }
