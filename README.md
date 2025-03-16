@@ -7,15 +7,15 @@ I made this project because of my desire for a very simple service monitoring ap
 
 Goals:
 1. Learn/practice Golang as I read through "The Go Programming Language"
-    a) Test out templating in Golang
-    b) Test out Level/structured logging
-    c) Explore Makefile usage with go (shout out to [Alex Edwards](https://www.alexedwards.net/blog/a-time-saving-makefile-for-your-go-projects) for template)
-    d) Experiment with the package system (build and use an internal package)
+    * Test out templating in Golang
+    * Test out Level/structured logging
+    * Explore Makefile usage with go (shout out to [Alex Edwards](https://www.alexedwards.net/blog/a-time-saving-makefile-for-your-go-projects) for template)
+    * Experiment with the package system (build and use an internal package)
 2. Get exposure to the web side of programming
-    a) Test out HTMX
-    b) Different update strategies (e.g. sse events, ajax, etc)
-    b) Trying theming with CSS Variables
-    c) Learn some bootstrap
+    * Test out HTMX
+    * Different update strategies (e.g. sse events, ajax, etc)
+    * Trying theming with CSS Variables
+    * Learn some bootstrap
 3. Apply some Patterns as I re-read "Design Patterns"
 4. Build out a service status/health page for homelab use
 
