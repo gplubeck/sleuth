@@ -1,5 +1,7 @@
 package ringbuffer
 
+import "fmt"
+
 type RingBuffer[T any] struct {
     data []T
     size int
@@ -8,10 +10,10 @@ type RingBuffer[T any] struct {
     isFull bool
 }
 
-
 func NewRingBuffer[T any](size int) RingBuffer[T] {
     return RingBuffer[T]{
-        data: make([]T, size),
+        //data: make([]T, size),
+        data: make([]T, size, size),
         size: size,
         head: 0,
         tail: 0,
@@ -19,58 +21,81 @@ func NewRingBuffer[T any](size int) RingBuffer[T] {
     }
 }
 
+// Add item to ring buffer.  If full, will overwrite oldest element
 func (r *RingBuffer[T]) Push(item T) {
+    // move tail when buffer is full
     if r.isFull {
         r.tail = (r.tail + 1) % r.size
     }
 
+    // insert at head position
     r.data[r.head] = item
+    // move head, wrapping if required
     r.head = (r.head + 1) % r.size
 
+    // test for full
     if r.head == r.tail {
         r.isFull = true
     }
+    fmt.Printf("Size: %d, head: %d, tail: %d\n", r.Size(), r.head, r.tail)
 }
 
-// remove oldest element from ring buff
+/*******************************************************************
+** returns oldest element from ring buff and removes it from buffer
+** isEmpty returns true if ring is empty
+********************************************************************/
 func (r *RingBuffer[T]) Pop() (T, bool) {
     // If buffer empty, return a zero value of T and false
     if r.head == r.tail && !r.isFull {
         var zeroValue T
-        return zeroValue, false
+        return zeroValue, true 
     }
 
     value := r.data[r.tail]
     r.tail = (r.tail + 1) % r.size
     r.isFull = false 
 
-    return value, true
+    return value, false 
 }
 
-// return oldest element from ring buff without removing from buffer
-func (r *RingBuffer[T]) Peak() (T, bool) {
+/*******************************************************************
+** return oldest element from ring buff without removing from buffer
+** isEmpty returns true if ring is empty
+********************************************************************/
+func (r *RingBuffer[T]) Peek() (item T, isEmpty bool) {
     // If buffer empty, return a zero value of T and false
     if r.head == r.tail && !r.isFull {
         var zeroValue T
-        return zeroValue, false
+        return zeroValue, true 
     }
 
     value := r.data[r.tail]
-    return value, true
+    return value, false 
 }
 
 // return all element in order for things like range loops
 func (r *RingBuffer[T]) GetAll() []T {
-    var result []T
+    // empty case
+    if !r.isFull && r.head == r.tail {
+        return []T{}
+    }
+
+    result := make([]T, 0, r.size)
+
     if r.isFull {
-        for i := r.tail; i != r.head; i = (i + 1) % r.size {
-            result = append(result, r.data[i])
+        for i:=0; i<r.size; i++ {
+            index := (r.tail + i) % r.size
+            result = append(result, r.data[index])
         }
     } else {
-        for i := r.tail; i < r.head; i++ {
-            result = append(result, r.data[i])
+        if r.head > r.tail {
+            result = append(result, r.data[r.tail:r.head]...)
+        } else {
+            result = append(result, r.data[r.tail:]...)
+            result = append(result, r.data[r.head:]...)
         }
     }
+
     return result
 }
 
@@ -80,11 +105,12 @@ func (r *RingBuffer[T]) Size() int {
         return r.size
     }
 
-    if (r.head == r.tail && r.isFull == false) {
-        return 0;
+    // not full, but equal is empty
+    if r.head == r.tail {
+        return 0
     }
 
-    if r.head >= r.tail {
+    if r.head > r.tail {
         return r.head - r.tail
     }
 
