@@ -59,14 +59,6 @@ func (s *Server) addRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/static/{type}/{file}", s.static)
 }
 
-func NewServer(store ServiceStore, ch <-chan []byte) *Server {
-	server := new(Server)
-	server.store = store
-	server.channel = ch
-
-	return server
-}
-
 func (server *Server) statusHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {

@@ -35,11 +35,9 @@ func main() {
 	go Scheduler(store, updateChannel)
 
 	//start server
-	server := NewServer(store, updateChannel)
-	server.Cert_key = config.Server.Cert_key
-	server.Cert_file = config.Server.Cert_file
-	server.Port = config.Server.Port
-	server.Theme = config.Server.Theme
+	server := config.Server
+	server.channel = updateChannel
+	server.store = store
 	mux := http.NewServeMux()
 	server.addRoutes(mux)
 	log.Printf("Starting Service Sleuth Server version: %s", Version)
