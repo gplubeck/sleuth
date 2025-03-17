@@ -1,7 +1,5 @@
 package ringbuffer
 
-import "fmt"
-
 type RingBuffer[T any] struct {
     data []T
     size int
@@ -37,7 +35,6 @@ func (r *RingBuffer[T]) Push(item T) {
     if r.head == r.tail {
         r.isFull = true
     }
-    fmt.Printf("Size: %d, head: %d, tail: %d\n", r.Size(), r.head, r.tail)
 }
 
 /*******************************************************************

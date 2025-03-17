@@ -1,26 +1,20 @@
 [server]
 port = 5000
-cert_file = "big-bubba.pem"
-cert_key = "big-bubba-key.pem"
-log_level = "Debug"
-theme = "dark_theme.css"
-storage_type = "memory"
+cert_file = "big-bubba.pem" # optional server cert for TLS.  Without, will use plaintext.
+cert_key = "big-bubba-key.pem" # optional server key for TLS
+log_level = "Warn"
+theme = "dark_theme.css" #customizable theme.  To Make your own, create a new .css in assets/css/ using the same css variables
+storage_type = "memory" #currently on meemory storage available
+
 
 [[service]]
-id = 4
-service_name = "DownService"
-address = "8.8.8.8"
-protocol_str= "TCP"
-start = "2025-03-15T10:00:00Z"
-timer = 30
-
-[[service]]
-id = 5
-service_name = "Test Service"
-address = "8.8.8.8"
-protocol_str= "Test"
-timer = 5
-MaxHistory = 1000
+id = 5 # change to auto create ids
+service_name = "Test Service" # Name to display in service card
+address = "8.8.8.8:443"  # Addess to connect to.  Must have port
+icon = "" # optional icon to display with service name, local or external img src
+protocol_str= "Test" # TCP, UDP, or Test.  Test will return ~50% successful
+timer = 5 # How often to probe in seconds
+MaxHistory = 1000 # How many health checks to keep
 
 [[service]]
 id = 0
@@ -33,12 +27,22 @@ timer = 30
 MaxHistory = 500
 
 [[service]]
-id = 1
-service_name = "Notes Page"
-address = "notes.gplubeck.com:443"
-link = "https://notes.gplubeck.com"
+id = 3
+service_name = "Home Page"
+address = "gplubeck.com:443"
+link = "https://gplubeck.com"
 protocol_str= "TCP"
-timer = 30
+timer =  600 # every ten minutes
+MaxHistory = 144 # one day
+
+[[service]]
+id = 6
+service_name = "RSS Feed"
+address = "rss.gplubeck.com:443"
+link = "https://rss.gplubeck.com"
+protocol_str= "TCP"
+timer =  3600 # every hour 
+MaxHistory = 10 # 96 4 days
 
 [[service]]
 id = 2
@@ -50,11 +54,17 @@ timer =  120 # every other minute
 MaxHistory = 720 # one day
 
 [[service]]
-id = 3
-service_name = "Home Page"
-address = "gplubeck.com:443"
-link = "https://gplubeck.com"
+id = 4 
+service_name = "DownService" 
+address = "8.8.8.8"
 protocol_str= "TCP"
-timer =  600 # every ten minutes
-MaxHistory = 144 # one day
+start = "2025-03-15T10:00:00Z"
+timer = 30
 
+[[service]]
+id = 1
+service_name = "Notes Page"
+address = "notes.gplubeck.com:443"
+link = "https://notes.gplubeck.com"
+protocol_str= "TCP"
+timer = 30
