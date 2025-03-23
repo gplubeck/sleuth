@@ -13,33 +13,7 @@
             {{range .}}
             <div class="col-md-4">
                 <div class="card service-card" id="service-{{.ID}}" sse-swap="service-{{.ID}}">
-                    <div class="service-header">
-                        {{if .Icon}}
-                        <img src="static/assets/{{.Icon}}" />
-                        {{end}}
-                        <div>
-                            <h5 class="mb-0 title">{{.Name }}</h5>
-                            <span class="status-indicator {{ if .Status }}status-online{{ else }}status-offline{{ end }}">
-                                {{ if .Status }}Online{{ else }}Offline{{ end }}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="service-body">
-                        <!-- Uptime Graph -->
-                        <div class="uptime-graph-container">
-                            {{range getAllHistory .History }}
-                            <div class="uptime-segment {{if .Status }} green {{else}} red {{end}}" style="flex-grow: 1;"></div>
-                            {{end}}
-                        </div>
-                        <div class="time-labels">
-                            <span>Start</span><span>Now</span>
-                        </div>
-                        <p ><strong>Uptime:</strong>
-                            <span class="uptime-info {{if gt .Uptime 90.0}} green {{else if gt .Uptime 79.0}} yellow {{else}} red {{end}}">
-                            {{printf "%.2f" .Uptime}}%
-                            </span>
-                        </p>
-                    </div>
+                    {{template "service-card" .}}
                 </div>
             </div>
             {{end}}

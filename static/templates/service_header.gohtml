@@ -1,0 +1,16 @@
+<!-- Header for service.  Gets swapped with htmx -->
+{{define "service-header"}}
+
+<div class="service-header" onclick="window.location.href='{{.Link}}'">
+    {{if .Icon}}
+    <img src="static/assets/{{.Icon}}" />
+    {{end}}
+    <div>
+        <h5 class="mb-0 title">{{.Name }}</h5>
+        <span class="status-indicator {{ if .Status }}status-online{{ else }}status-offline{{ end }}">
+            {{ if .Status }}Online{{ else }}Offline{{ end }}
+        </span>
+    </div>
+</div>
+
+{{end}}

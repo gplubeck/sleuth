@@ -69,10 +69,13 @@ func (server *Server) statusHandler(w http.ResponseWriter, r *http.Request) {
 			"getAllHistory": getAllHistory,
 		}).ParseFiles("static/templates/layout.gohtml",
 			"static/templates/header.gohtml",
-			"static/templates/homepage.gohtml")
+			"static/templates/homepage.gohtml",
+			"static/templates/service_card.gohtml",
+			"static/templates/service_header.gohtml",
+			"static/templates/service_body.gohtml")
 
 		if err != nil {
-			log.Printf("Failed to parse homepage template: %s", err)
+			slog.Error("Failed to parse homepage template.", "Error", err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

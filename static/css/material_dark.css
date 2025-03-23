@@ -5,11 +5,9 @@
     --background-color: #1d1f28; /* Dark background with slight blue tint for a modern look */
 
     /* Status Colors */
-    --status-online: #28a745; /* Green for "Online" */
-    --status-offline: #dc3545; /* Red for "Offline" */
+    --status-online: #588723; /* Green for "Online" */
+    --status-offline: #873e23; /* Red for "Offline" */
     --status-degraded: #ffc107; /* Yellow for "Degraded" */
-    --status-maintenance: #6c757d; /* Gray for "Maintenance" */
-    --status-unknown: #6f42c1; /* Purple for "Unknown" or "Pending" */
 
     /* Service Card info */
     --service-card-background: #23272b; /* Dark gray background for service cards */
