@@ -177,6 +177,7 @@ func (service *Service) templateStr() string {
 	//template := `<div class="service-header" onclick="window.location.href='{{.Link}}'"> {{if .Icon}} <img src="static/assets/{{.Icon}}" /> {{end}} <div> <h5 class="mb-0 title">{{.Name }}</h5> <span class="status-indicator {{ if .Status }}status-online{{ else }}status-offline{{ end }}"> {{ if .Status }}Online{{ else }}Offline{{ end }} </span> </div> </div> <div class="service-body"> <!-- Uptime Graph --> <div class="uptime-graph-container"> {{range getAllHistory .History }} <div class="uptime-segment {{if .Status }} green {{else}} red {{end}}" style="flex-grow: 1;"></div> {{end}} </div> <div class="time-labels"> <span>Start</span><span>Now</span> </div> <p ><strong>Uptime:</strong> <span class="uptime-info {{if gt .Uptime 90.0}} green {{else if gt .Uptime 79.0}} yellow {{else}} red {{end}}"> {{printf "%.2f" .Uptime}}% </span> </p> </div></div>`
 	tmpl, err := template.New("service-card").Funcs(template.FuncMap{
 		"getAllHistory": getAllHistory,
+		"formatTime":    formatTime,
 	}).ParseFiles("static/templates/service_card.gohtml",
 		"static/templates/service_header.gohtml",
 		"static/templates/service_body.gohtml")

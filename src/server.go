@@ -163,5 +163,11 @@ func (server *Server) updateHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func formatTime(t time.Time) string {
-	return t.Format("2006-01-02 15:04:05")
+	now := time.Now()
+	midnight := now.Truncate(24 * time.Hour)
+	dateTest := t.Truncate(24 * time.Hour)
+	if dateTest.Equal(midnight) {
+		return t.Format("15:04:05")
+	}
+	return t.Format("01-02")
 }

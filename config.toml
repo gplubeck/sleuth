@@ -2,8 +2,8 @@
 port = 5000
 cert_file = "big-bubba.pem" # optional server cert for TLS.  Without, will use plaintext.
 cert_key = "big-bubba-key.pem" # optional server key for TLS
-log_level = "Warn"
-theme = "dark_theme.css" #customizable theme.  To Make your own, create a new .css in assets/css/ using the same css variables
+log_level = "Info"
+theme = "material_dark.css" #customizable theme.  To Make your own, create a new .css in assets/css/ using the same css variables
 storage_type = "memory" #currently on meemory storage available
 
 

@@ -91,11 +91,20 @@ header {
     margin-top: 0.5rem;
 }
 
-
 .uptime-segment {
     height: 100%;
     flex-grow: 1;
     transition: all 0.3s ease-in-out;
+    border: var(--uptime-segment-border);
+}
+
+.uptime-segment:hover {
+    border: var(--uptime-segment-hover-border);
+}
+
+.uptime-segment:hover .hover-text {
+    visibility: var(--uptime-segment-hover-text-visibility);
+    visibility: var(--uptime-segment-hover-text-opacity);
 }
 
 .uptime-segment.green {

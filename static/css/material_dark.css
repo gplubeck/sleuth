@@ -19,6 +19,12 @@
     --service-card-header-bg-color: #2c3139; /* Dark header background */
     --service-card-header-img-border: 2px solid #3b4047; /* Light border around images */
 
+    /* Uptime Graph */
+    --uptime-segment-border: 1px solid #2a2f36;
+    --uptime-segment-hover-border: 1px solid #54b3d6;
+    --uptime-segment-hover-text-visibility: visible;
+    --uptime-segment-hover-text-opacity: 1;
+
     --service-card-time-labels-color: #868e96; /* Light grayish text for time labels */
 }
 
