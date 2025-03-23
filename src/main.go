@@ -25,7 +25,12 @@ func main() {
 	}
 
 	for _, service := range config.Services {
-		store.AddService(service)
+        //test if service is already in store
+        _, err := store.GetServiceByID(service.ID)
+        // err means could not find service
+        if err != nil {
+            store.AddService(service)
+        }
 	}
 
 	// event bus from scheduler publisher

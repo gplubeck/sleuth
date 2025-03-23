@@ -25,7 +25,7 @@ func parseConfigs(configFile string) Config {
 	}
 
 	for i, service := range config.Services {
-		config.Services[i].Protocol = NewProtocol(service.ProtocolString)
+		config.Services[i].protocol = NewProtocol(service.ProtocolString)
 		config.Services[i].Start = time.Now()
 		slog.Debug("Parsed service.", "service", service)
 		maxSize := config.Services[i].MaxHistorySize

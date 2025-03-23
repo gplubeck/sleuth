@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"log"
 	"log/slog"
 	"sync"
 	"time"
@@ -19,7 +18,7 @@ func Scheduler(store ServiceStore, channel chan<- []byte) {
 	var wg sync.WaitGroup
 	wg.Add(len(*store.GetServices()))
 
-	log.Println("Starting go routines.")
+	slog.Debug("Starting Scheduler go routines.")
 
 	eventBus := make(chan []byte)
 
@@ -44,6 +43,7 @@ func Scheduler(store ServiceStore, channel chan<- []byte) {
 
 		//send event to server to distribute to active connections
 		channel <- eventData
+        store.Save()
 	}
 
 	//wg.Wait()
@@ -64,6 +64,7 @@ func monitorService(service Service, eventBus chan<- []byte) {
 			slog.Error("Error marshalling JSON. ", "error", err)
 			continue
 		}
+        slog.Debug("Sending update to scheduluer.", "service", service.ID)
 		eventBus <- update
 		time.Sleep(time.Duration(service.Timer) * time.Second)
 	}

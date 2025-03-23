@@ -2,8 +2,11 @@ package main
 
 import (
 	//	"encoding/json"
+	"bytes"
+	"encoding/gob"
 	"errors"
 	"log/slog"
+	"os"
 	"sync"
 )
 
@@ -15,6 +18,14 @@ type InMemoryStore struct {
 func NewInMemoryStore() (*InMemoryStore, error) {
 	i := new(InMemoryStore)
 	i.store = []Service{}
+    // check for gob storage
+    isFile, _ := os.Stat(".sleuth.bin")
+    
+    // if gob storage exists, load
+    if isFile != nil {
+        i.Load()
+    }
+
 	return i, nil
 }
 
@@ -61,5 +72,54 @@ func (i *InMemoryStore) EventUpdate(event EventData) error {
 	}
 
 	return nil
-
 }
+
+func (i *InMemoryStore) Save() error {
+    buffer := new(bytes.Buffer)
+    encoder := gob.NewEncoder(buffer)
+    err := encoder.Encode(i.store)
+    if err != nil {
+        slog.Error("Failed to gob encode data.", "error", err)
+        return err
+    }
+
+    err = os.WriteFile(".sleuth.bin", buffer.Bytes(), 0600)
+    if err != nil {
+        slog.Error("Failed to write gob data.", "error", err)
+        return err
+    }
+
+    return nil
+}
+
+func (i *InMemoryStore) Load() error {
+    raw, err := os.ReadFile(".sleuth.bin")
+    if err != nil {
+        slog.Error("Failed to read gob data.", "error", err)
+        return err
+    }
+
+    var tmpStore *[]Service
+
+    buffer := bytes.NewBuffer(raw)
+    dec := gob.NewDecoder(buffer)
+    err = dec.Decode(&tmpStore)
+    if err != nil {
+        slog.Error("Failed to decode gob data.", "error", err)
+        return err
+    }
+
+    if tmpStore != nil {
+        for _, service := range *tmpStore {
+            // make the interface
+            if service.protocol == nil {
+                service.protocol = NewProtocol(service.ProtocolString)
+            }
+            i.store = append(i.store, service)
+        }
+        slog.Info("Loading previous storage into memory.")
+    }
+
+    return nil
+}
+

@@ -17,7 +17,7 @@ type Service struct {
 	Name           string                           `toml:"service_name"`
 	Address        string                           `toml:"address"`  //maybe should eventual be its own IP/FQDN type
 	Link           string                           `toml:"link"`     //used for onclick functionality must provide http:// or https:// if left blank, no link
-	Protocol       Protocol                         `toml:"protocol"` //interface to allow for Strategy Pattern and future expansion
+	protocol       Protocol                         `toml:"protocol"` //interface to allow for Strategy Pattern and future expansion
 	ProtocolString string                           `toml:"protocol_str"`
 	Start          time.Time                        `toml:"start_time"`
 	LastUpdate     time.Time                        `toml:"update_time"`
@@ -119,7 +119,8 @@ func (service *Service) getStatus() response {
 	var resp response
 	resp.timestamp = time.Now()
 
-	conn, err := service.Protocol.Connect(service.Address, 2*time.Second)
+
+	conn, err := service.protocol.Connect(service.Address, 2*time.Second)
 	if err != nil {
 		resp.Status = false
 	} else {
@@ -148,7 +149,7 @@ func (service *Service) getUptime() float64 {
 		}
 	}
 
-	uptime = (success / float64(service.History.Size()) * 100)
+	uptime = (success / float64(service.History.GetSize()) * 100)
 	return uptime
 
 }

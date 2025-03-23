@@ -2,7 +2,7 @@
 port = 5000
 cert_file = "big-bubba.pem" # optional server cert for TLS.  Without, will use plaintext.
 cert_key = "big-bubba-key.pem" # optional server key for TLS
-log_level = "Info"
+log_level = "debug"
 theme = "material_dark.css" #customizable theme.  To Make your own, create a new .css in assets/css/ using the same css variables
 storage_type = "memory" #currently on meemory storage available
 
@@ -23,8 +23,8 @@ address = "gitea.gplubeck.com:3000"
 link = "https://gitea.gplubeck.com"
 protocol_str= "TCP"
 icon = "gitea_logo.svg"
-timer = 30
-MaxHistory = 500
+timer = 60
+MaxHistory = 50
 
 [[service]]
 id = 3
@@ -51,7 +51,7 @@ address = "tv.gplubeck.com:443"
 link = "https://tv.gplubeck.com"
 protocol_str= "UDP"
 timer =  120 # every other minute
-MaxHistory = 720 # one day
+MaxHistory = 50
 
 [[service]]
 id = 4 
@@ -60,6 +60,7 @@ address = "8.8.8.8"
 protocol_str= "TCP"
 start = "2025-03-15T10:00:00Z"
 timer = 30
+MaxHistory = 50
 
 [[service]]
 id = 1
@@ -68,3 +69,4 @@ address = "notes.gplubeck.com:443"
 link = "https://notes.gplubeck.com"
 protocol_str= "TCP"
 timer = 30
+MaxHistory = 50
