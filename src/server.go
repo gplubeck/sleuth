@@ -140,29 +140,46 @@ func (server *Server) updateHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
-	w.(http.Flusher).Flush()
+
+    flusher, okay := w.(http.Flusher)
+    if !okay {
+        http.Error(w, "Streaming unsupported! What browser?", http.StatusInternalServerError)
+        return
+    }
+
+    flusher.Flush()
 
 	//create context for handling client disconnect
-	_, cancel := context.WithCancel(r.Context())
+	ctx, cancel := context.WithCancel(r.Context())
 	defer cancel()
 
 	// Infinite loop to send events every second
 	for {
-		// pop event
-		eventData := <-server.channel
-		slog.Debug("Update Received Server Side.", "event", eventData)
-		var event EventData
-		err := json.Unmarshal(eventData, &event)
-		if err != nil {
-			slog.Error("Unable to Unmarshal event update.", "Error", err)
-		}
+        select {
+        case <-ctx.Done():
+            slog.Debug("Client disconnect.")
+            return
+            // pop event
+        case eventData := <-server.channel:
+            slog.Debug("Update Received Server Side.", "event", eventData)
+            var event EventData
+            err := json.Unmarshal(eventData, &event)
+            if err != nil {
+                slog.Error("Unable to Unmarshal event update.", "Error", err)
+            }
 
-		// send to html elements to subscribers
-		service, err := server.store.GetServiceByID(event.ServiceID)
-		fmt.Fprintf(w, "event: service-%d\n", service.ID)
-		fmt.Fprintf(w, "data: %s\n\n", service.toHTML())
-		w.(http.Flusher).Flush() // Flush the response writer to send the event immediately
-	}
+            // send to html elements to subscribers
+            service, err := server.store.GetServiceByID(event.ServiceID)
+            if err != nil {
+                slog.Error("Unable to get service by ID.", "ServiceID", event.ServiceID, "Error", err)
+            }
+            _, err = fmt.Fprintf(w, "event: service-%d\ndata:%s\n\n", service.ID, service.toHTML())
+            if err != nil {
+                slog.Error("Error writing event to update stream.", "ServiceID", event.ServiceID, "Error", err)
+            }
+            flusher.Flush() // Flush the response writer to send the event immediately
+        }
+    }
 
 }
 
