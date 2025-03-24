@@ -3,7 +3,7 @@ port = 5000
 cert_file = "big-bubba.pem" # optional server cert for TLS.  Without, will use plaintext.
 cert_key = "big-bubba-key.pem" # optional server key for TLS
 log_level = "warn"
-theme = "dark_theme.css" #customizable theme.  To Make your own, create a new .css in assets/css/ using the same css variables
+theme = "material_dark.css" #customizable theme.  To Make your own, create a new .css in assets/css/ using the same css variables
 title = "Real Time Service Status"
 subtitle = "Stay up to date with service health."
 storage_type = "memory" #currently on memory storage available
@@ -25,7 +25,7 @@ service_name = "Gitea"
 address = "gitea.gplubeck.com:3000"
 link = "https://gitea.gplubeck.com"
 protocol_str= "TCP"
-icon = "static/assets/gitea_logo.svg"
+icon = "static/assets/gitea_logo.svg" #example of local icon
 timer = 60
 MaxHistory = 40
 

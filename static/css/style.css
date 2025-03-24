@@ -67,7 +67,7 @@ header {
 }
 
 .status-pending {
-    color: var(--status-limited);
+    color: var(--status-degraded);
 }
 
 /* Service Body */
@@ -114,7 +114,7 @@ header {
 }
 
 .uptime-segment.yellow {
-    background-color: var(--status-limited);
+    background-color: var(--status-degraded);
 }
 
 .uptime-segment.red {
@@ -135,7 +135,7 @@ header {
     color: var(--status-online);
 }
 .uptime-info.yellow{
-    color: var(--status-limited);
+    color: var(--status-degraded);
 }
 .uptime-info.red{
     color: var(--status-offline);

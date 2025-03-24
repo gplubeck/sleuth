@@ -8,7 +8,7 @@
             <p class="text-muted">{{.Server.Subtitle}}</p>
         </header>
 
-        <div class="row" id="service-container" hx-ext="sse" sse-connect="/updates">
+        <div class="row d-flex justify-content-center" id="service-container" hx-ext="sse" sse-connect="/updates">
             <!-- create service cards -->
             {{range .Services}}
             <div class="col-md-4">

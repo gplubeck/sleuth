@@ -7,7 +7,7 @@
     /* Status Colors */
     --status-online: #6b8e23;
     --status-offline: #fa8072;
-    --status-limited: #ffd54f;
+    --status-degraded: #ffd54f;
 
     /* Service Card info */
     --service-card-background: #1f1f1f;
