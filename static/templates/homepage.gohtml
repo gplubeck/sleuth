@@ -3,14 +3,14 @@
 
 <body>
     <div class="container my-5">
-        <header class="mb-4 text-center">
-            <h1>Real-Time Service Status</h1>
-            <p class="text-muted">Stay up to date with the health of our services.</p>
+        <header class="title mb-4 text-center">
+            <h1>{{.Server.Title}}</h1>
+            <p class="text-muted">{{.Server.Subtitle}}</p>
         </header>
 
         <div class="row" id="service-container" hx-ext="sse" sse-connect="/updates">
             <!-- create service cards -->
-            {{range .}}
+            {{range .Services}}
             <div class="col-md-4">
                 <div class="card service-card" id="service-{{.ID}}" sse-swap="service-{{.ID}}">
                     {{template "service-card" .}}
@@ -23,11 +23,11 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-  return new bootstrap.Tooltip(tooltipTriggerEl)
-})
-});
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    });
 </script>
 
 {{ end }}

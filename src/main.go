@@ -75,7 +75,8 @@ func main() {
 				switch sig {
 				case syscall.SIGINT, syscall.SIGTERM:
 					log.Printf("Received signal %s. Cleaning up....", sig)
-					os.Exit(0)
+                    store.Save()
+                    os.Exit(0)
 				case syscall.SIGHUP:
 					log.Printf("Received signal %s. Reload configs.", sig)
 					log.Printf("Oh wait... Reminder to implement this.")

@@ -2,19 +2,22 @@
 port = 5000
 cert_file = "big-bubba.pem" # optional server cert for TLS.  Without, will use plaintext.
 cert_key = "big-bubba-key.pem" # optional server key for TLS
-log_level = "debug"
-theme = "material_dark.css" #customizable theme.  To Make your own, create a new .css in assets/css/ using the same css variables
-storage_type = "memory" #currently on meemory storage available
+log_level = "warn"
+theme = "dark_theme.css" #customizable theme.  To Make your own, create a new .css in assets/css/ using the same css variables
+title = "Real Time Service Status"
+subtitle = "Stay up to date with service health."
+storage_type = "memory" #currently on memory storage available
 
 
 [[service]]
 id = 5 # change to auto create ids
 service_name = "Test Service" # Name to display in service card
 address = "8.8.8.8:443"  # Addess to connect to.  Must have port
-icon = "" # optional icon to display with service name, local or external img src
+icon = "https://picsum.photos/200" # optional icon to display with service name, local or external img src
 protocol_str= "Test" # TCP, UDP, or Test.  Test will return ~50% successful
 timer = 5 # How often to probe in seconds
-MaxHistory = 1000 # How many health checks to keep
+MaxHistory = 40 # How many health checks to keep
+link = "https://google.com" # optional.  If used, will change service card header into a clickable item and redirect
 
 [[service]]
 id = 0
@@ -22,9 +25,9 @@ service_name = "Gitea"
 address = "gitea.gplubeck.com:3000"
 link = "https://gitea.gplubeck.com"
 protocol_str= "TCP"
-icon = "gitea_logo.svg"
+icon = "static/assets/gitea_logo.svg"
 timer = 60
-MaxHistory = 50
+MaxHistory = 40
 
 [[service]]
 id = 3
@@ -42,7 +45,7 @@ address = "rss.gplubeck.com:443"
 link = "https://rss.gplubeck.com"
 protocol_str= "TCP"
 timer =  3600 # every hour 
-MaxHistory = 10 # 96 4 days
+MaxHistory = 40
 
 [[service]]
 id = 2
@@ -51,7 +54,7 @@ address = "tv.gplubeck.com:443"
 link = "https://tv.gplubeck.com"
 protocol_str= "UDP"
 timer =  120 # every other minute
-MaxHistory = 50
+MaxHistory = 40
 
 [[service]]
 id = 4 
@@ -60,7 +63,7 @@ address = "8.8.8.8"
 protocol_str= "TCP"
 start = "2025-03-15T10:00:00Z"
 timer = 30
-MaxHistory = 50
+MaxHistory = 40
 
 [[service]]
 id = 1
@@ -69,4 +72,4 @@ address = "notes.gplubeck.com:443"
 link = "https://notes.gplubeck.com"
 protocol_str= "TCP"
 timer = 30
-MaxHistory = 50
+MaxHistory = 40

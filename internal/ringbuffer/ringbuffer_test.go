@@ -15,7 +15,7 @@ func TestPush(t *testing.T) {
     rb.Push(40)
     rb.Push(50)
     expected := 5
-    result := rb.Size()
+    result := rb.GetSize()
 
     if result != expected {
         t.Errorf("Push 5 elements. Size = %d; expected %d", result, expected)
@@ -89,7 +89,7 @@ func TestOverwrite(t *testing.T) {
         t.Errorf("Overwrite. result = %s; expected %s", result, expected)
     }
 
-    if !r.isFull {
+    if !r.IsFull {
         t.Errorf("Overwrite. isFull= %v; expected %v", true, false)
     }
 }

@@ -20,7 +20,7 @@
     --service-card-header-img-border: 2px solid #3b4047; /* Light border around images */
 
     /* Uptime Graph */
-    --uptime-segment-border: 1px solid #3b4047;
+    --uptime-segment-border: .25px solid #3b4047;
     --uptime-segment-hover-border: 1px solid #868e96;
     --uptime-segment-hover-text-visibility: visible;
     --uptime-segment-hover-text-opacity: 1;

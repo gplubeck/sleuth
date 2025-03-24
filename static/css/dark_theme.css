@@ -1,7 +1,7 @@
 /* Global Dark Theme */
 :root {
     --primary-text: #f8f8f8; /* light gray */
-    --text-muted: #a0a0a0;
+    --text-muted: #a0a0a0; /*subtitle text */
     --background-color: #121212; /* deep black */
 
     /* Status Colors */
@@ -18,6 +18,13 @@
     --service-card-hover-color: #1b1b1b;
     --service-card-header-bg-color: #292929;
     --service-card-header-img-border: 2px solid #555555;
+
+    
+    /* Uptime Graph */
+    --uptime-segment-border: .25px transparent #3b4047;
+    --uptime-segment-hover-border: 1px solid #868e96;
+    --uptime-segment-hover-text-visibility: visible;
+    --uptime-segment-hover-text-opacity: 1;
 
     --service-card-time-labels-color: #b0b0b0;
 

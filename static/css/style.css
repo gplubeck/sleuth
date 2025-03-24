@@ -1,27 +1,26 @@
-@import url('theme.css');
+/*@import url('theme.css');*/
 html {
-    background-color: var(--background-color); /* Deep dark background */
+    background-color: var(--background-color); 
 }
 body {
-    background-color: var(--background-color); /* Deep dark background */
-    /*color: #eaeaea; /* Light gray for general text */
+    background-color: var(--background-color);
 }
 
 .title {
-    color: var(--primary-text); /* Light gray for general text */
+    color: var(--primary-text); 
 }
 
 header {
-    color: var(--primary-text); /* White for header text */
+    color: var(--primary-text);
 }
 
 .text-muted {
-    color: var(--text-muted) !important; /* Softer muted text */
+    color: var(--text-muted) !important; 
 }
 
 /* Service Card */
 .service-card {
-    background-color: var(--service-card-background); /* Slightly lighter dark */
+    background-color: var(--service-card-background); 
     border: var(--service-card-border);
     border-radius: var(--service-card-border-radius);
     margin-bottom: var(--service-card-margin-bottom);
@@ -37,9 +36,12 @@ header {
     display: flex;
     align-items: center;
     padding: 1rem;
-    background-color: var(--service-card-header-bg-color); /* Dark header for contrast */
+    background-color: var(--service-card-header-bg-color);
     border-bottom: var(service-card-border)
     height: 70px;
+}
+.service-header:hover {
+    cursor: pointer;
 }
 
 .service-header img {

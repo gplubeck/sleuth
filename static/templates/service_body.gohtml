@@ -14,7 +14,7 @@
         <span>{{formatTime .Start}}</span><span>Now</span>
     </div>
     <p ><strong>Uptime:</strong>
-    <span class="uptime-info {{if gt .Uptime 90.0}} green {{else if gt .Uptime 79.0}} yellow {{else}} red {{end}}">
+    <span class="uptime-info {{if gt .Uptime 89.9}} green {{else if gt .Uptime 79.9}} yellow {{else}} red {{end}}">
         {{printf "%.2f" .Uptime}}%
     </span>
     </p>

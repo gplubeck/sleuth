@@ -46,6 +46,8 @@ type Server struct {
 	Storage   string `toml:"storage_type"`
 
 	Theme string `toml:"theme"`
+	Title string `toml:"title"`
+	Subtitle string `toml:"subtitle"`
 
 	store ServiceStore
 	http.Handler
@@ -83,8 +85,12 @@ func (server *Server) statusHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		services := server.store.GetServices()
-		//log.Printf("Services sent: %+q", services)
-		err = tmpl.ExecuteTemplate(w, "layout", services)
+        templateData := struct{
+            Server *Server 
+            Services *[]Service
+        }{ Server: server, Services: services }
+
+		err = tmpl.ExecuteTemplate(w, "layout", templateData)
 		if err != nil {
 			log.Printf("Failed to parse homepage template: %s", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -108,10 +114,6 @@ func (server *Server) static(w http.ResponseWriter, r *http.Request) {
 
 	case "css":
 		w.Header().Set("Content-Type", "text/css")
-		// Must take care of switching for theme
-		if asset == "theme.css" {
-			asset = server.Theme
-		}
 
 	default:
 		w.Header().Set("Content-Type", "text/html")
@@ -171,5 +173,5 @@ func formatTime(t time.Time) string {
 	if dateTest.Equal(midnight) {
 		return t.Format("15:04:05")
 	}
-	return t.Format("01-02")
+    return t.Format("01-02 15:04:05")
 }
