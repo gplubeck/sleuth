@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"log/slog"
@@ -11,6 +12,8 @@ import (
 )
 
 func main() {
+    noHistory := flag.Bool("no-history", false, "Start without loading any history from .sleuth.bin")
+    flag.Parse()
 	configPath := "config.toml"
 	log.Printf("Parsing config file: %s", configPath)
 	config := parseConfigs(configPath)
@@ -19,7 +22,7 @@ func main() {
 	slog.SetLogLoggerLevel(getLogLevel(config.Server.LogLevel))
 
 	//mock memory store
-	store, err := NewServiceStore(config.Server.Storage)
+	store, err := NewServiceStore(config.Server.Storage, *noHistory)
 	if err != nil {
 		log.Fatalf("Unable to intialize storage. Error: %s", err)
 	}

@@ -27,10 +27,10 @@ type ServiceStore interface {
     Save() error
 }
 
-func NewServiceStore(storageType string) (ServiceStore, error) {
+func NewServiceStore(storageType string, noHistory bool) (ServiceStore, error) {
 	switch storageType {
 	case "memory":
-		return NewInMemoryStore()
+		return NewInMemoryStore(noHistory)
 	case "sqlite":
 		return nil, fmt.Errorf("sqlite memory not yet implemented.")
 	default:

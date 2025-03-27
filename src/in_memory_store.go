@@ -15,14 +15,14 @@ type InMemoryStore struct {
 	store      []Service
 }
 
-func NewInMemoryStore() (*InMemoryStore, error) {
+func NewInMemoryStore(noHistory bool) (*InMemoryStore, error) {
 	i := new(InMemoryStore)
 	i.store = []Service{}
     // check for gob storage
     isFile, _ := os.Stat(".sleuth.bin")
     
     // if gob storage exists, load
-    if isFile != nil {
+    if isFile != nil  && !noHistory {
         i.Load()
     }
 
