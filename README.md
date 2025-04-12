@@ -2,6 +2,29 @@
 
 Sleuth is a simple service monitoring application that uses server side events and htmx in order to reduce network traffic.  Instead of clients constantly pulling the server for updates, the backend sends small segments of the page to swap out as each service has an update.  The project is designed to be easy to get up and running while also maintain some flexible styling via CSS variables. 
 
+---
+### How to use
+1. Clone this repo.
+2. cd into sleuth
+3. Edit the config.toml to suit your needs
+4. run the command ```make run``` to try to it out. Or build the with ```make production``` then run with "./bin/sleuth"
+
+### Don't want to build from source?
+1. Clone the repo.
+2. Download a binary from the releases section.
+3. Place binary in sleuth/bin/
+4. ./bin/sleuth
+
+### Want to use as service on Alpine?
+1. I have made an example openrc script to help with convience.
+2. Place the script in /etc/init.d/
+3. Edit the script to change "owning_dir" to whatever path you placed the git repo
+4. Ensure it has executable permissions
+5. Run ```rc-update add service sleuth default``` This will start the sleuth on start of your VM
+6. Then ```rc-service sleuth start``` in order to start it immediately.
+
+---
+
 ### Goals
 I made this project because of my desire for a very simple service monitoring application and my desire to be exposed to a handful of new (to me) technologies. Below is a more direct listing of what I am hoping to accomplish.
 
@@ -26,14 +49,5 @@ Dark Theme
 Material Dark Theme
 ![material_dark_theme_screenshot](./static/assets/material_dark.png)
 
----
-### How to use
-1. Clone this repo.
-2. cd into sleuth
-3. Edit the config.toml to suit your needs
-4. run the command ```make run``` to try to it out. Or build the with ```make production``` then run with "./bin/sleuth"
-
----
 ### Ongoing Questions/ Things that "feel" wrong or bad
 1. Can I use a struct method inside a template func map?  Or is this only because I am using generics for the ringbuffer? E.g. getAll in ringbuff package and again in service.go
-2. Communication setup feels bad.  Services publish updates through a channel to the scheduler.  Scheduler updates the storage.  Scheduler then forwards event to server and server pushes to any clients connected.  This feels overly complicated.

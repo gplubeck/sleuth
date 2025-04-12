@@ -1,0 +1,40 @@
+#!/sbin/openrc-run
+name="sleuth"
+description="Starts Service Sleuth"
+command="/home/sleuth/bin/sleuth"
+owning_dir="/home/sleuth"
+pidfile="/run/${RC_SVCNAME}.pid"
+command_background=true
+
+depend() {
+        need localmount net
+}
+
+start_pre() {
+    echo "changing root dir"
+    cd "${owning_dir}"
+}
+
+#no start, using default
+
+stop() {
+    ebegin "Stopping ${name}"
+    if [ -f "${pidfile}" ]; then
+        start-stop-daemon --stop --pidfile "${pidfile}" -- retry 5
+        echo "${name} stopped."
+    else
+        echo "${name} is not running."
+        return 1
+    fi
+    eend $?
+}
+
+status() {
+    if [ -f "${pidfile}" ]; then
+        einfo "${name} is running."
+        return 0
+    else
+        echo "${name} is not running."
+        return 1
+    fi
+}
