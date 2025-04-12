@@ -26,7 +26,7 @@ type Service struct {
 	Timer          int                              //how often to check service in seconds
 	Icon           string                           //name of icon to use from /assets/icons
 	History        ringbuffer.RingBuffer[EventData] `toml:"uptime_history"`
-	MaxHistorySize int                              //number of Events to hold
+    MaxHistorySize int                              `toml:"maxHistory"` //number of Events to hold
 }
 
 /*****************************************
@@ -119,7 +119,6 @@ func (service *Service) getStatus() response {
 	var resp response
 	resp.timestamp = time.Now()
 
-
 	conn, err := service.protocol.Connect(service.Address, 2*time.Second)
 	if err != nil {
 		resp.Status = false
@@ -154,6 +153,22 @@ func (service *Service) getUptime() float64 {
 
 }
 
+/**********************************************
+* Changes service start time if old start time 
+* is overwritten in RingBuffer
+************************************************/
+func (service *Service) updateStart() time.Time{
+
+    // tail will be oldest in ringbuff
+    tail, isEmpty := service.History.Peek()
+    //should never happedn
+    if isEmpty {
+        return time.Time{}
+    }
+
+	return tail.Timestamp
+
+}
 /*************************************************************
 * Used to return string that will be used to swap html content
 *************************************************************/
@@ -174,8 +189,6 @@ func (service *Service) toHTML() string {
 }
 
 func (service *Service) templateStr() string {
-	//    template := `<div class="service-header"> {{if .Icon}} <img src="static/assets/{{.Icon}}" /> {{end}} <div> <h5 class="mb-0 title">{{ .Name }}</h5> <span class="status-indicator {{ if .Status }}status-online{{ else }}status-offline{{ end }}"> {{ if .Status }}Online{{ else }}Offline{{ end }} </span> </div> </div> <div class="service-body"> <!-- Uptime Graph --> <div class="uptime-graph-container"> {{range getAllHistory .History}} <div class="uptime-segment {{if .Status }} green {{else}} red {{end}}" style="flex-grow: 1;"></div> {{end}} </div> <div class="time-labels"> <span>Start</span><span>Now</span> </div> <p class="uptime-info"><strong>Uptime:</strong> {{printf "%.2f" .Uptime}}% </p> </div> </div>`
-	//template := `<div class="service-header" onclick="window.location.href='{{.Link}}'"> {{if .Icon}} <img src="static/assets/{{.Icon}}" /> {{end}} <div> <h5 class="mb-0 title">{{.Name }}</h5> <span class="status-indicator {{ if .Status }}status-online{{ else }}status-offline{{ end }}"> {{ if .Status }}Online{{ else }}Offline{{ end }} </span> </div> </div> <div class="service-body"> <!-- Uptime Graph --> <div class="uptime-graph-container"> {{range getAllHistory .History }} <div class="uptime-segment {{if .Status }} green {{else}} red {{end}}" style="flex-grow: 1;"></div> {{end}} </div> <div class="time-labels"> <span>Start</span><span>Now</span> </div> <p ><strong>Uptime:</strong> <span class="uptime-info {{if gt .Uptime 90.0}} green {{else if gt .Uptime 79.0}} yellow {{else}} red {{end}}"> {{printf "%.2f" .Uptime}}% </span> </p> </div></div>`
 	tmpl, err := template.New("service-card").Funcs(template.FuncMap{
 		"getAllHistory": getAllHistory,
 		"formatTime":    formatTime,
