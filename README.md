@@ -15,15 +15,11 @@ Sleuth is a simple service monitoring application that uses server side events a
 3. Place binary in sleuth/bin/
 4. ./bin/sleuth
 
-### Want to use as service on Alpine?
-1. I have made an example openrc script to help with convience.
-2. Place the script in /etc/init.d/
-3. Edit the script to change "owning_dir" to whatever path you placed the git repo
-4. Ensure it has executable permissions
-5. Run ```rc-update add service sleuth default``` This will start the sleuth on start of your VM
-6. Then ```rc-service sleuth start``` in order to start it immediately.
-
+### Options
+The only current flag is --no-history which will start sleuth without loading hold uptime history.
 ---
+
+
 
 ### Goals
 I made this project because of my desire for a very simple service monitoring application and my desire to be exposed to a handful of new (to me) technologies. Below is a more direct listing of what I am hoping to accomplish.
@@ -40,7 +36,7 @@ Goals:
     * Trying theming with CSS Variables
     * Learn (enough) bootstrap to have a decent site
 3. Apply some Patterns as I re-read "Design Patterns"
-4. Build out a service status/health page for homelab use
+4. Build out a service status/health page for homelab use that takes very little to no upkeep and takes no time to get up and running.
 
 ### Screenshots
 Dark Theme
@@ -48,6 +44,16 @@ Dark Theme
 
 Material Dark Theme
 ![material_dark_theme_screenshot](./static/assets/material_dark.png)
+
+---
+### Want to use as service on Alpine?
+1. I have made an example openrc script to help with convience.
+2. Place the script in /etc/init.d/
+3. Edit the script to change "owning_dir" to whatever path you placed the git repo
+4. Ensure it has executable permissions
+5. Run ```rc-update add service sleuth default``` This will start the sleuth on start of your VM
+6. Then ```rc-service sleuth start``` in order to start it immediately.
+---
 
 ### Ongoing Questions/ Things that "feel" wrong or bad
 1. Can I use a struct method inside a template func map?  Or is this only because I am using generics for the ringbuffer? E.g. getAll in ringbuff package and again in service.go
