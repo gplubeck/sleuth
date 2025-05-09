@@ -32,9 +32,13 @@ func NewInMemoryStore(noHistory bool) (*InMemoryStore, error) {
 func (i *InMemoryStore) GetServices() *[]Service {
 	return &i.store
 }
+// Add service to slice and assign a UID
 func (i *InMemoryStore) AddService(service Service) {
 	//embedded struct mutex
 	i.Lock()
+    // assign next id slot available.
+    // will become a problem when deleting services is added
+    service.ID = uint(len(i.store)) + 1
 	i.store = append(i.store, service)
 	i.Unlock()
 }
