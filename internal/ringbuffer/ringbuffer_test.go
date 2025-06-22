@@ -97,19 +97,22 @@ func TestOverwrite(t *testing.T) {
 func TestGetAll(t *testing.T) {
     r := NewRingBuffer[int](3)
     r.Push(1)
-    r.Push(1)
-    r.Push(1)
     r.Push(2)
+    r.Push(3)
+    r.Push(4)
+    r.Push(5)
 
     ints := r.GetAll()
-    var result int
-    for i := range ints {
-        result += ints[i]
-    }
-    expected := 1
 
-    if result != expected {
-        t.Errorf("Overwrite. result = %d; expected %d", result, expected)
+    expected := make([]int, 3)
+    expected[0] = 3
+    expected[1] = 4
+    expected[2] = 5
+
+    for i := range ints {
+        if expected[i] != ints[i]{
+            t.Errorf("Overwrite. result = %v; expected %v", ints, expected)
+        }
     }
 }
 
