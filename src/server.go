@@ -153,6 +153,10 @@ func (server *Server) updateHandler(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithCancel(r.Context())
 	defer cancel()
 
+    // Heartbeat ticker
+    heartbeatTicker := time.NewTicker(30 * time.Second)
+    defer heartbeatTicker.Stop()
+
 	// Infinite loop to send events every second
 	for {
         select {
@@ -178,6 +182,17 @@ func (server *Server) updateHandler(w http.ResponseWriter, r *http.Request) {
                 slog.Error("Error writing event to update stream.", "ServiceID", event.ServiceID, "Error", err)
             }
             flusher.Flush() // Flush the response writer to send the event immediately
+
+        case <-heartbeatTicker.C:
+            // heatbeat to client for good connection reasons
+            _, err := fmt.Fprintf(w, ":heartbeat\n\n")
+            if err != nil {
+                slog.Error("Error writing ehartbeat to client.", "Error", err)
+                // assume disconnect and kill
+                return
+            }
+            slog.Debug("Sending heartbeat to active clients.")
+            flusher.Flush()
         }
     }
 
