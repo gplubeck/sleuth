@@ -39,12 +39,11 @@ func main() {
 	// event bus from scheduler publisher
 	updateChannel := make(chan []byte)
 
-	//start scheduler
-	go Scheduler(store, updateChannel)
 
 	//start server
 	server := config.Server
 	server.channel = updateChannel
+    server.publisher = NewPublisher()
 	server.store = store
 	mux := http.NewServeMux()
 	server.addRoutes(mux)
@@ -52,6 +51,10 @@ func main() {
 	log.Printf("Build Time: %s", BuildTime)
 	log.Printf("Listening on port: %d", server.Port)
 	slog.Debug("Server cert files", "key", server.Cert_key, "cert", server.Cert_file)
+
+    //complete start up send them goroutines 
+    go server.publisher.Start()
+	go Scheduler(store, updateChannel)
 
 	go func() {
 		var err error
@@ -90,7 +93,17 @@ func main() {
 		}
 	}()
 
-	//block until goroutines are cleaned up
-	select {}
+
+//block until goroutines are cleaned up
+    for {
+        select {
+        case eventData := <-server.channel:
+            slog.Debug("Update received in main.", "event", eventData)
+            // send to all clients
+            server.publisher.publish<- eventData 
+            slog.Debug("Update sent to publisher.", "event", eventData)
+        }
+    }
+    //select{}
 
 }

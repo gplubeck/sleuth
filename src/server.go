@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -27,6 +26,7 @@ type ServiceStore interface {
     Save() error
 }
 
+
 func NewServiceStore(storageType string, noHistory bool) (ServiceStore, error) {
 	switch storageType {
 	case "memory":
@@ -50,6 +50,7 @@ type Server struct {
 	Subtitle string `toml:"subtitle"`
 
 	store ServiceStore
+    publisher *Publisher
 	http.Handler
 
 	//channel for json updates
@@ -147,25 +148,31 @@ func (server *Server) updateHandler(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+    // make channel for new subscriber
+    clientChan := make(chan []byte, 10)
+    server.publisher.addClient <- clientChan
+    defer func() {
+        server.publisher.removeClient <- clientChan
+    }()
+
     flusher.Flush()
 
 	//create context for handling client disconnect
-	ctx, cancel := context.WithCancel(r.Context())
-	defer cancel()
+	ctx := r.Context()
 
     // Heartbeat ticker
     heartbeatTicker := time.NewTicker(30 * time.Second)
     defer heartbeatTicker.Stop()
 
-	// Infinite loop to send events every second
+	// Infinite loop to send events
 	for {
         select {
         case <-ctx.Done():
             slog.Debug("Client disconnect.")
             return
             // pop event
-        case eventData := <-server.channel:
-            slog.Debug("Update Received Server Side.", "event", eventData)
+        case eventData := <-clientChan:
+            slog.Debug("Update Received in updateHandler.", "event", eventData)
             var event EventData
             err := json.Unmarshal(eventData, &event)
             if err != nil {

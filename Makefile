@@ -4,7 +4,7 @@ GOBUILD=$(GOCMD) build
 GOTEST=$(GOCMD) test 
 GOCLEAN=$(GOCMD) clean
 
-SRC_FILES= main.go config.go in_memory_store.go server.go service.go scheduler.go version.go
+SRC_FILES= main.go config.go in_memory_store.go server.go service.go scheduler.go version.go publisher.go
 SRC= $(addprefix src/, $(SRC_FILES))
 
 # Binary name
