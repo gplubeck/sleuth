@@ -54,7 +54,8 @@ func main() {
 
     //complete start up send them goroutines 
     go server.publisher.Start()
-	go Scheduler(store, updateChannel)
+	//go Scheduler(store, updateChannel)
+	go Scheduler(store, server.publisher.publish)
 
 	go func() {
 		var err error
@@ -94,16 +95,7 @@ func main() {
 	}()
 
 
-//block until goroutines are cleaned up
-    for {
-        select {
-        case eventData := <-server.channel:
-            slog.Debug("Update received in main.", "event", eventData)
-            // send to all clients
-            server.publisher.publish<- eventData 
-            slog.Debug("Update sent to publisher.", "event", eventData)
-        }
-    }
-    //select{}
+    //block until goroutines are cleaned up
+    select{}
 
 }
