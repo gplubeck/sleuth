@@ -39,11 +39,11 @@ Goals:
 4. Build out a service status/health page for homelab use that takes very little to no upkeep and takes no time to get up and running.
 
 ### Screenshots
-Dark Theme
-![dark_theme_screenshot](./static/assets/dark_theme.png)
-
 Material Dark Theme
 ![material_dark_theme_screenshot](./static/assets/material_dark.png)
+
+Dark Theme
+![dark_theme_screenshot](./static/assets/dark_theme.png)
 
 ---
 ### Want to use as service on Alpine?
