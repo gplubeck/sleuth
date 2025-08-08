@@ -32,13 +32,11 @@ func NewInMemoryStore(noHistory bool) (*InMemoryStore, error) {
 func (i *InMemoryStore) GetServices() *[]Service {
 	return &i.store
 }
-// Add service to slice and assign a UID
+// Add service to slice
+// Todo add autogenerating IDs that figure out if it is a new service or just updated
 func (i *InMemoryStore) AddService(service Service) {
 	//embedded struct mutex
 	i.Lock()
-    // assign next id slot available.
-    // will become a problem when deleting services is added
-    service.ID = uint(len(i.store)) + 1
 	i.store = append(i.store, service)
 	i.Unlock()
 }
