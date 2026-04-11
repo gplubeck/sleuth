@@ -21,6 +21,10 @@ func main() {
 	log.Printf("Setting log level: %s", config.Server.LogLevel)
 	slog.SetLogLoggerLevel(getLogLevel(config.Server.LogLevel))
 
+	if err := initTemplates(); err != nil {
+		log.Fatalf("Failed to parse templates: %s", err)
+	}
+
 	//mock memory store
 	store, err := NewServiceStore(config.Server.Storage, *noHistory)
 	if err != nil {
@@ -47,6 +51,7 @@ func main() {
 	server.store = store
 	mux := http.NewServeMux()
 	server.addRoutes(mux)
+	loggedMux := loggingMiddleware(mux)
 	log.Printf("Starting Service Sleuth Server version: %s", Version)
 	log.Printf("Build Time: %s", BuildTime)
 	log.Printf("Listening on port: %d", server.Port)
@@ -62,10 +67,10 @@ func main() {
 		port := fmt.Sprintf(":%d", server.Port)
 		if server.Cert_file != "" && server.Cert_key != "" {
 			slog.Info("Starting TLS Server.")
-			err = http.ListenAndServeTLS(port, server.Cert_file, server.Cert_key, mux)
+			err = http.ListenAndServeTLS(port, server.Cert_file, server.Cert_key, loggedMux)
 		} else {
 			slog.Warn("Starting Plaintext Server.")
-			err = http.ListenAndServe(port, mux)
+			err = http.ListenAndServe(port, loggedMux)
 		}
 		if err != nil {
 			log.Fatalf("Failed server state.  Error: %s", err)

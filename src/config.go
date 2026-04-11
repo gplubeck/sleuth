@@ -24,8 +24,28 @@ func parseConfigs(configFile string) Config {
 		log.Fatalf("Error loading TOML config. Error: %s", err)
 	}
 
+	seenIDs := make(map[uint]bool)
 	for i, service := range config.Services {
+		if service.ID == 0 {
+			log.Fatalf("Service %q (index %d): id must be set and non-zero", service.Name, i)
+		}
+		if seenIDs[service.ID] {
+			log.Fatalf("Duplicate service id: %d", service.ID)
+		}
+		seenIDs[service.ID] = true
+
+		if service.Name == "" {
+			log.Fatalf("Service at index %d: service_name must not be empty", i)
+		}
+		if service.Timer <= 0 {
+			log.Fatalf("Service %q: timer must be greater than 0", service.Name)
+		}
+
 		config.Services[i].protocol = NewProtocol(service.ProtocolString)
+		if config.Services[i].protocol == nil {
+			log.Fatalf("Service %q: unknown protocol %q", service.Name, service.ProtocolString)
+		}
+
 		config.Services[i].Start = time.Now()
 		slog.Debug("Parsed service.", "service", service)
 		maxSize := config.Services[i].MaxHistorySize

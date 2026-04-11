@@ -9,8 +9,50 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 )
+
+var (
+	homepageTmpl    *template.Template
+	serviceCardTmpl *template.Template
+)
+
+func initTemplates() error {
+	var err error
+	homepageTmpl, err = template.New("homepage.gohtml").Funcs(template.FuncMap{
+		"formatTime":    formatTime,
+		"getAllHistory": getAllHistory,
+	}).ParseFiles(
+		"static/templates/layout.gohtml",
+		"static/templates/header.gohtml",
+		"static/templates/homepage.gohtml",
+		"static/templates/service_card.gohtml",
+		"static/templates/service_header.gohtml",
+		"static/templates/service_body.gohtml")
+	if err != nil {
+		return err
+	}
+
+	serviceCardTmpl, err = template.New("service-card").Funcs(template.FuncMap{
+		"getAllHistory": getAllHistory,
+		"formatTime":    formatTime,
+	}).ParseFiles(
+		"static/templates/service_card.gohtml",
+		"static/templates/service_header.gohtml",
+		"static/templates/service_body.gohtml")
+	return err
+}
+
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		next.ServeHTTP(w, r)
+		slog.Info("request", "method", r.Method, "path", r.RequestURI,
+			"remote", r.RemoteAddr, "duration_ms", time.Since(start).Milliseconds())
+	})
+}
 
 /*************************************************
 * Interface type that will serve
@@ -69,31 +111,15 @@ func (server *Server) statusHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		w.Header().Set("Content-Type", "text/html")
-		tmpl, err := template.New("homepage.gohtml").Funcs(template.FuncMap{
-			"formatTime":    formatTime,
-			"getAllHistory": getAllHistory,
-		}).ParseFiles("static/templates/layout.gohtml",
-			"static/templates/header.gohtml",
-			"static/templates/homepage.gohtml",
-			"static/templates/service_card.gohtml",
-			"static/templates/service_header.gohtml",
-			"static/templates/service_body.gohtml")
-
-		if err != nil {
-			slog.Error("Failed to parse homepage template.", "Error", err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
 		services := server.store.GetServices()
-        templateData := struct{
-            Server *Server 
-            Services *[]Service
-        }{ Server: server, Services: services }
+		templateData := struct {
+			Server   *Server
+			Services *[]Service
+		}{Server: server, Services: services}
 
-		err = tmpl.ExecuteTemplate(w, "layout", templateData)
+		err := homepageTmpl.ExecuteTemplate(w, "layout", templateData)
 		if err != nil {
-			log.Printf("Failed to parse homepage template: %s", err)
+			log.Printf("Failed to execute homepage template: %s", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -109,18 +135,25 @@ func (server *Server) static(w http.ResponseWriter, r *http.Request) {
 	asset := r.PathValue("file")
 	slog.Info("Serving file static asset.", filetype, "filetype", "asset", asset)
 
+	// Whitelist valid asset types to prevent path traversal
 	switch filetype {
 	case "javascript":
 		w.Header().Set("Content-Type", "application/javascript")
-
 	case "css":
 		w.Header().Set("Content-Type", "text/css")
-
 	default:
-		w.Header().Set("Content-Type", "text/html")
+		http.Error(w, "Invalid asset type", http.StatusBadRequest)
+		return
 	}
 
-	file, err := os.Open("static/" + filetype + "/" + asset)
+	// Reject any path that tries to escape the static directory
+	clean := filepath.Clean(asset)
+	if strings.Contains(clean, "..") || strings.HasPrefix(clean, "/") {
+		http.Error(w, "Invalid asset path", http.StatusBadRequest)
+		return
+	}
+
+	file, err := os.Open(filepath.Join("static", filetype, clean))
 	if err != nil {
 		log.Printf("Failed to serve static file %s. Error: %s ", asset, err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -174,15 +207,16 @@ func (server *Server) updateHandler(w http.ResponseWriter, r *http.Request) {
         case eventData := <-clientChan:
             slog.Debug("Update Received in updateHandler.", "event", eventData)
             var event EventData
-            err := json.Unmarshal(eventData, &event)
-            if err != nil {
+            if err := json.Unmarshal(eventData, &event); err != nil {
                 slog.Error("Unable to Unmarshal event update.", "Error", err)
+                continue
             }
 
             // send to html elements to subscribers
             service, err := server.store.GetServiceByID(event.ServiceID)
             if err != nil {
                 slog.Error("Unable to get service by ID.", "ServiceID", event.ServiceID, "Error", err)
+                continue
             }
             _, err = fmt.Fprintf(w, "event: service-%d\ndata:%s\n\n", service.ID, service.toHTML())
             if err != nil {

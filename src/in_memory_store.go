@@ -30,6 +30,8 @@ func NewInMemoryStore(noHistory bool) (*InMemoryStore, error) {
 }
 
 func (i *InMemoryStore) GetServices() *[]Service {
+	i.Lock()
+	defer i.Unlock()
 	return &i.store
 }
 // Add service to slice
@@ -37,8 +39,8 @@ func (i *InMemoryStore) GetServices() *[]Service {
 func (i *InMemoryStore) AddService(service Service) {
 	//embedded struct mutex
 	i.Lock()
+	defer i.Unlock()
 	i.store = append(i.store, service)
-	i.Unlock()
 }
 
 func (i *InMemoryStore) GetServiceByID(id uint) (*Service, error) {

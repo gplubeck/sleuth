@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"errors"
-	"html/template"
 	"log/slog"
 	"math/rand"
 	"net"
@@ -173,44 +172,14 @@ func (service *Service) updateStart() time.Time{
 * Used to return string that will be used to swap html content
 *************************************************************/
 func (service *Service) toHTML() string {
-
-	templateStr := service.templateStr()
-	tmpl, err := template.New("serviceElement").Funcs(template.FuncMap{
-		"getAllHistory": getAllHistory,
-	}).Parse(templateStr)
-	if err != nil {
-		slog.Error("Unable to create parse template.", "service", service.ID, "error", err.Error())
-	}
-
 	var tmplOutput bytes.Buffer
-	err = tmpl.Execute(&tmplOutput, service)
-
-	return tmplOutput.String()
-}
-
-func (service *Service) templateStr() string {
-	tmpl, err := template.New("service-card").Funcs(template.FuncMap{
-		"getAllHistory": getAllHistory,
-		"formatTime":    formatTime,
-	}).ParseFiles("static/templates/service_card.gohtml",
-		"static/templates/service_header.gohtml",
-		"static/templates/service_body.gohtml")
-
+	err := serviceCardTmpl.ExecuteTemplate(&tmplOutput, "service-card", service)
 	if err != nil {
-		slog.Error("Failed to parse serviceElement template.", "Error", err.Error())
+		slog.Error("Failed to execute service card template.", "service", service.ID, "error", err.Error())
+		return ""
 	}
-
-	var tmplOutput bytes.Buffer
-	err = tmpl.Execute(&tmplOutput, service)
-	if err != nil {
-		slog.Error("Failed execute serviceElement template.", "Error", err.Error())
-	}
-
-	templateStr := tmplOutput.String()
-	// remove newlines so we don't mess up server side messages
-	templateStr = strings.ReplaceAll(templateStr, "\n", "")
-
-	return templateStr
+	// remove newlines so we don't mess up server side events
+	return strings.ReplaceAll(tmplOutput.String(), "\n", "")
 }
 
 // func for templates to range

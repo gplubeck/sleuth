@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"log/slog"
-	"sync"
 	"time"
 )
 
@@ -14,10 +13,6 @@ type EventData struct {
 }
 
 func Scheduler(store ServiceStore, channel chan<- []byte) {
-
-	var wg sync.WaitGroup
-	wg.Add(len(*store.GetServices()))
-
 	slog.Debug("Starting Scheduler go routines.")
 
 	eventBus := make(chan []byte)
@@ -27,27 +22,32 @@ func Scheduler(store ServiceStore, channel chan<- []byte) {
 		go monitorService(service, eventBus)
 	}
 
+	saveTicker := time.NewTicker(30 * time.Second)
+	defer saveTicker.Stop()
+
 	for {
-		eventData := <-eventBus
-		var event EventData
-		err := json.Unmarshal(eventData, &event)
-		if err != nil {
-			slog.Error("Unable to Unmarshal event update.", "Error", err)
-		}
+		select {
+		case eventData := <-eventBus:
+			var event EventData
+			if err := json.Unmarshal(eventData, &event); err != nil {
+				slog.Error("Unable to Unmarshal event update.", "Error", err)
+				continue
+			}
 
-		// update server.store
-		err = store.EventUpdate(event)
-		if err != nil {
-			slog.Error("Unable to handle event update.", "Error", err)
-		}
+			// update server.store
+			if err := store.EventUpdate(event); err != nil {
+				slog.Error("Unable to handle event update.", "Error", err)
+			}
 
-		//send event to server to distribute to active connections
-		channel <- eventData
-        store.Save()
+			// send event to server to distribute to active connections
+			channel <- eventData
+
+		case <-saveTicker.C:
+			if err := store.Save(); err != nil {
+				slog.Error("Failed to persist store.", "error", err)
+			}
+		}
 	}
-
-	//wg.Wait()
-	//log.Printf("All %d services cleaned up.", len(*store.GetServices()))
 }
 
 func monitorService(service Service, eventBus chan<- []byte) {
