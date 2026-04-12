@@ -46,13 +46,13 @@ Dark Theme
 ![dark_theme_screenshot](./static/assets/dark_theme.png)
 
 ---
-### Want to use as service on Alpine?
-1. I have made an example openrc script to help with convience.
-2. Place the script in /etc/init.d/
-3. Edit the script to change "owning_dir" to whatever path you placed the git repo
-4. Ensure it has executable permissions
-5. Run ```rc-update add service sleuth default``` This will start the sleuth on start of your VM
-6. Then ```rc-service sleuth start``` in order to start it immediately.
+### Deploying as a system service
+See [DEPLOY.md](DEPLOY.md) for full instructions covering:
+- systemd (Linux)
+- OpenRC (Alpine)
+- TLS configuration
+- Reverse proxy setup (nginx / Caddy)
+- Config reload without restart
 ---
 
 ### Ongoing Questions/ Things that "feel" wrong or bad

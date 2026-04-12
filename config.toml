@@ -20,7 +20,7 @@ MaxHistory = 40 # How many health checks to keep
 link = "https://google.com" # optional.  If used, will change service card header into a clickable item and redirect
 
 [[service]]
-id = 0
+id = 7
 service_name = "Gitea"
 address = "gitea.gplubeck.com:3000"
 link = "https://gitea.gplubeck.com"

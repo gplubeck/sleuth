@@ -31,14 +31,7 @@ func main() {
 		log.Fatalf("Unable to intialize storage. Error: %s", err)
 	}
 
-	for _, service := range config.Services {
-        //test if service is already in store
-        _, err := store.GetServiceByID(service.ID)
-        // err means could not find service
-        if err != nil {
-            store.AddService(service)
-        }
-	}
+	store.ReconcileServices(config.Services)
 
 	// event bus from scheduler publisher
 	updateChannel := make(chan []byte)
@@ -57,10 +50,10 @@ func main() {
 	log.Printf("Listening on port: %d", server.Port)
 	slog.Debug("Server cert files", "key", server.Cert_key, "cert", server.Cert_file)
 
-    //complete start up send them goroutines 
-    go server.publisher.Start()
-	//go Scheduler(store, updateChannel)
-	go Scheduler(store, server.publisher.publish)
+	//complete start up send them goroutines
+	go server.publisher.Start()
+	scheduler := NewScheduler(store, server.publisher.publish)
+	scheduler.Start()
 
 	go func() {
 		var err error
@@ -90,8 +83,37 @@ func main() {
                     store.Save()
                     os.Exit(0)
 				case syscall.SIGHUP:
-					log.Printf("Received signal %s. Reload configs.", sig)
-					log.Printf("Oh wait... Reminder to implement this.")
+					log.Printf("Received signal %s. Reloading config.", sig)
+					newConfig := parseConfigs(configPath)
+
+					// Snapshot current IDs before touching the store
+					current := *store.GetServices()
+					currentIDs := make(map[uint]bool, len(current))
+					for _, s := range current {
+						currentIDs[s.ID] = true
+					}
+					newIDs := make(map[uint]bool, len(newConfig.Services))
+					for _, s := range newConfig.Services {
+						newIDs[s.ID] = true
+					}
+
+					// Cancel goroutines for services being removed
+					for _, s := range current {
+						if !newIDs[s.ID] {
+							scheduler.RemoveService(s.ID)
+						}
+					}
+
+					// Sync the store (remove stale, update existing, add new)
+					store.ReconcileServices(newConfig.Services)
+
+					// Start goroutines for newly added services
+					for _, s := range newConfig.Services {
+						if !currentIDs[s.ID] {
+							scheduler.AddService(s)
+						}
+					}
+					log.Printf("Config reloaded successfully.")
 				default:
 					log.Printf("%s caught, but not yet implemented.", sig)
 				}

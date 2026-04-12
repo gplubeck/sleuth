@@ -55,6 +55,57 @@ func (i *InMemoryStore) GetServiceByID(id uint) (*Service, error) {
 	return nil, errors.New("Unable to get service.")
 }
 
+// ReconcileServices syncs the store against the provided config slice:
+//   - Services in config but not store are added fresh.
+//   - Services in store but not config are removed.
+//   - Services in both keep their runtime state (history, uptime, status)
+//     but have their config fields updated (name, address, timer, protocol, icon, link).
+func (i *InMemoryStore) ReconcileServices(services []Service) {
+	i.Lock()
+	defer i.Unlock()
+
+	// Index config services by ID for O(1) lookups
+	configMap := make(map[uint]Service, len(services))
+	for _, s := range services {
+		configMap[s.ID] = s
+	}
+
+	// Drop store entries that are no longer in config
+	kept := make([]Service, 0, len(i.store))
+	for _, s := range i.store {
+		if _, inConfig := configMap[s.ID]; inConfig {
+			kept = append(kept, s)
+		} else {
+			slog.Info("Removing service no longer in config.", "id", s.ID, "name", s.Name)
+		}
+	}
+	i.store = kept
+
+	// Update config-driven fields on services that survived, preserving runtime state
+	for idx := range i.store {
+		cfg := configMap[i.store[idx].ID]
+		i.store[idx].Name = cfg.Name
+		i.store[idx].Address = cfg.Address
+		i.store[idx].Timer = cfg.Timer
+		i.store[idx].ProtocolString = cfg.ProtocolString
+		i.store[idx].protocol = cfg.protocol
+		i.store[idx].Icon = cfg.Icon
+		i.store[idx].Link = cfg.Link
+	}
+
+	// Add services that are in config but not yet in the store
+	storeIDs := make(map[uint]bool, len(i.store))
+	for _, s := range i.store {
+		storeIDs[s.ID] = true
+	}
+	for _, s := range services {
+		if !storeIDs[s.ID] {
+			slog.Info("Adding new service from config.", "id", s.ID, "name", s.Name)
+			i.store = append(i.store, s)
+		}
+	}
+}
+
 func (i *InMemoryStore) EventUpdate(event EventData) error {
 
 	_, err := i.GetServiceByID(event.ServiceID)

@@ -64,8 +64,9 @@ type ServiceStore interface {
 	GetServices() *[]Service
 	GetServiceByID(uint) (*Service, error)
 	EventUpdate(EventData) error
-    Load() error
-    Save() error
+	ReconcileServices([]Service)
+	Load() error
+	Save() error
 }
 
 
