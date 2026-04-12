@@ -43,10 +43,13 @@ run:
 ## production: Makes stripped, production build for linux, amd64
 production:
 	@echo -n 'Enter Build version number (e.g. 0.0.5): ' && read ans &&\
-		GOOS=linux GOARCH=amd64 $(GOBUILD) -ldflags="-s -X 'main.Version=$$ans' -X 'main.BuildTime=$(BUILD_TIME)'" -o bin/$(BINARY_NAME) $(SRC)
+		CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -ldflags="-s -X 'main.Version=$$ans' -X 'main.BuildTime=$(BUILD_TIME)'" -o bin/$(BINARY_NAME) $(SRC)
 
 ## release: Non-interactive release build. Requires VERSION, GOOS, GOARCH env vars.
 ##          Example: VERSION=1.0.0 GOOS=linux GOARCH=amd64 make release
 release:
-	$(GOBUILD) -ldflags="-s -X 'main.Version=$(VERSION)' -X 'main.BuildTime=$(BUILD_TIME)'" \
+	@[ -n "$(VERSION)" ] || (echo "ERROR: VERSION is not set"; exit 1)
+	@[ -n "$(GOOS)" ]    || (echo "ERROR: GOOS is not set"; exit 1)
+	@[ -n "$(GOARCH)" ]  || (echo "ERROR: GOARCH is not set"; exit 1)
+	CGO_ENABLED=0 $(GOBUILD) -ldflags="-s -X 'main.Version=$(VERSION)' -X 'main.BuildTime=$(BUILD_TIME)'" \
 		-o bin/$(BINARY_NAME)-$(GOOS)-$(GOARCH) $(SRC)

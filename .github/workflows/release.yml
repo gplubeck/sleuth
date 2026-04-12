@@ -53,6 +53,7 @@ jobs:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
           VERSION: ${{ steps.version.outputs.VERSION }}
+          CGO_ENABLED: 0
         run: make release
 
       - name: Upload artifact

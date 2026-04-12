@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"io"
 	"log/slog"
+	"mime"
 	"net/http"
 	"os"
 	"path"
@@ -141,6 +142,10 @@ func (server *Server) static(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/javascript")
 	case "css":
 		w.Header().Set("Content-Type", "text/css")
+	case "assets":
+		if ct := mime.TypeByExtension(path.Ext(asset)); ct != "" {
+			w.Header().Set("Content-Type", ct)
+		}
 	default:
 		http.Error(w, "Invalid asset type", http.StatusBadRequest)
 		return
