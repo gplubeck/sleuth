@@ -1,0 +1,38 @@
+[Unit]
+Description=Sleuth Service Monitor
+Documentation=https://github.com/gplubeck/sleuth
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=sleuth
+Group=sleuth
+
+# Sleuth resolves config.toml, static/, and .sleuth.bin relative to cwd.
+# This must point to the directory that contains the binary, config, and static/.
+WorkingDirectory=/opt/sleuth
+
+ExecStart=/opt/sleuth/bin/sleuth
+ExecReload=/bin/kill -HUP $MAINPID
+
+# Restart on crash, but not on clean exit (e.g. SIGTERM during shutdown)
+Restart=on-failure
+RestartSec=5s
+
+# Give the process time to flush and save state on shutdown
+TimeoutStopSec=10s
+
+# Logging goes to journald automatically — use: journalctl -u sleuth -f
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=sleuth
+
+# Basic hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ReadWritePaths=/opt/sleuth
+
+[Install]
+WantedBy=multi-user.target
