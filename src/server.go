@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"html/template"
 	"io"
-	"log"
 	"log/slog"
 	"net/http"
+	"os"
 	"path"
 	"strings"
 	"time"
@@ -119,7 +119,7 @@ func (server *Server) statusHandler(w http.ResponseWriter, r *http.Request) {
 
 		err := homepageTmpl.ExecuteTemplate(w, "layout", templateData)
 		if err != nil {
-			log.Printf("Failed to execute homepage template: %s", err)
+			slog.Error("Failed to execute homepage template.", "error", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -153,17 +153,26 @@ func (server *Server) static(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file, err := staticFS.Open(path.Join("static", filetype, clean))
-	if err != nil {
-		log.Printf("Failed to serve static file %s. Error: %s ", asset, err)
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-		return
+	diskPath := path.Join("static", filetype, clean)
+
+	// Prefer a file on disk (allows custom themes without rebuilding),
+	// fall back to the embedded FS.
+	var file io.ReadCloser
+	if f, err := os.Open(diskPath); err == nil {
+		file = f
+	} else {
+		f, err := staticFS.Open(diskPath)
+		if err != nil {
+			slog.Error("Failed to serve static file.", "asset", asset, "error", err)
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			return
+		}
+		file = f
 	}
 	defer file.Close()
 
-	_, err = io.Copy(w, file)
-	if err != nil {
-		log.Printf("Failed to copy static file %s. Error: %s", asset, err)
+	if _, err := io.Copy(w, file); err != nil {
+		slog.Error("Failed to copy static file.", "asset", asset, "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
