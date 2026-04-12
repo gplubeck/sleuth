@@ -24,5 +24,7 @@
     --uptime-segment-hover-color: #868e96;
 
     --service-card-time-labels-color: #868e96; /* Light grayish text for time labels */
+
+    --response-time-display: block;
 }
 

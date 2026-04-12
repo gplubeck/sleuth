@@ -22,6 +22,7 @@ address = "myapp.example.com:443"   # host:port required
 protocol_str = "TCP"
 timer = 30                          # probe interval in seconds
 MaxHistory = 100                    # ring-buffer size (default 100)
+# timeout = 5                       # probe timeout in seconds (default: 5 for TCP/UDP, 10 for HTTP)
 link = "https://myapp.example.com"     # optional — makes the card header a link
 icon = "https://example.com/icon.png"  # optional — external URL
 # icon = "static/assets/myicon.png"   # or place a file in static/assets/ next to the binary

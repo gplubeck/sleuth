@@ -136,6 +136,11 @@ header {
     color: var(--status-offline);
 }
 
+/* Response time — hidden by default; themes opt in via --response-time-display */
+.response-time {
+    display: var(--response-time-display, none);
+}
+
 /* Empty state shown before first health check arrives */
 .uptime-empty {
     display: flex;

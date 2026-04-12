@@ -27,6 +27,8 @@ type Service struct {
 	Status         bool                             `toml:"status"`
 	Uptime         float64                          `toml:"uptime"`
 	Timer          int                              // how often to check service in seconds
+	Timeout        int    `toml:"timeout"`          // probe timeout in seconds; defaults to 5 (TCP/UDP) or 10 (HTTP)
+	LastResponseMs int64                            // most recent probe duration in milliseconds
 	Icon           string                           // name of icon to use from /assets/icons
 	History        ringbuffer.RingBuffer[EventData] `toml:"uptime_history"`
 	MaxHistorySize int                              `toml:"maxHistory"` // number of Events to hold
@@ -156,8 +158,9 @@ func (t *TestProtocol) Connect(address string, timeout time.Duration) (net.Conn,
 * Should return good/bad and timestamp
 ***************************************/
 type response struct {
-	Status    bool
-	timestamp time.Time
+	Status     bool
+	timestamp  time.Time
+	ResponseMs int64
 }
 
 func (service *Service) getStatus() response {
@@ -165,7 +168,19 @@ func (service *Service) getStatus() response {
 	var resp response
 	resp.timestamp = time.Now()
 
-	conn, err := service.protocol.Connect(service.Address, 2*time.Second)
+	timeout := service.Timeout
+	if timeout <= 0 {
+		if service.ProtocolString == "HTTP" {
+			timeout = 10
+		} else {
+			timeout = 5
+		}
+	}
+
+	start := time.Now()
+	conn, err := service.protocol.Connect(service.Address, time.Duration(timeout)*time.Second)
+	resp.ResponseMs = time.Since(start).Milliseconds()
+
 	if err != nil {
 		resp.Status = false
 	} else {

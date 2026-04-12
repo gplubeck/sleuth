@@ -8,7 +8,7 @@
     <div class="uptime-graph-container">
         {{range $history}}
         <div class="uptime-segment {{if .Status}} green {{else}} red {{end}}"
-            style="flex-grow: 1;" data-bs-toggle="tooltip" title="{{ formatTimestamp .Timestamp }}">
+            style="flex-grow: 1;" data-bs-toggle="tooltip" title="{{ formatTimestamp .Timestamp }} | {{.ResponseMs}}ms">
         </div>
         {{end}}
     </div>
@@ -20,6 +20,7 @@
             {{printf "%.2f" .Uptime}}%
         </span>
     </p>
+    <p class="response-time"><strong>Response:</strong> {{.LastResponseMs}}ms</p>
     {{else}}
     <div class="uptime-empty">Waiting for first health check&hellip;</div>
     {{end}}

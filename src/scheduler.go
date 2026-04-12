@@ -9,9 +9,10 @@ import (
 )
 
 type EventData struct {
-	ServiceID uint      `json:"serviceID"`
-	Status    bool      `json:"status"`
-	Timestamp time.Time `json:"timestamp"`
+	ServiceID  uint      `json:"serviceID"`
+	Status     bool      `json:"status"`
+	Timestamp  time.Time `json:"timestamp"`
+	ResponseMs int64     `json:"responseMs"`
 }
 
 type Scheduler struct {
@@ -97,6 +98,7 @@ func monitorService(ctx context.Context, service Service, eventBus chan<- []byte
 		response := service.getStatus()
 		event.Status = response.Status
 		event.Timestamp = response.timestamp
+		event.ResponseMs = response.ResponseMs
 		event.ServiceID = service.ID
 
 		update, err := json.Marshal(event)

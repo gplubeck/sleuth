@@ -24,4 +24,7 @@
     --uptime-segment-hover-color: #6c757d;
 
     --service-card-time-labels-color: #868e96;
+
+    /* opt in to response time display */
+    --response-time-display: block;
 }

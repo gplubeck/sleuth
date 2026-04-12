@@ -124,9 +124,10 @@ func (i *InMemoryStore) EventUpdate(event EventData) error {
 		if service.ID == event.ServiceID {
 			i.store[idx].LastUpdate = event.Timestamp
 			i.store[idx].Status = event.Status
+			i.store[idx].LastResponseMs = event.ResponseMs
 			i.store[idx].History.Push(event)
 			i.store[idx].Uptime = i.store[idx].getUptime()
-            i.store[idx].Start = i.store[idx].updateStart()
+			i.store[idx].Start = i.store[idx].updateStart()
 			slog.Debug("Updating service", "service", i.store[idx].Name)
 			break
 		}

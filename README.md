@@ -46,6 +46,7 @@ Templates and CSS are embedded in the binary, so no repo clone is needed.
 | `protocol_str` | yes | `TCP`, `UDP`, `HTTP`, or `Test`. |
 | `timer` | yes | Probe interval in seconds. |
 | `MaxHistory` | no | Ring-buffer size for uptime history. Default: `100`. |
+| `timeout` | no | Probe timeout in seconds. Default: `5` for TCP/UDP, `10` for HTTP. |
 | `link` | no | Makes the service card header a clickable link. |
 | `icon` | no | Image source (URL or local path) shown next to the service name. |
 
