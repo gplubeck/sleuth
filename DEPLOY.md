@@ -75,6 +75,34 @@ sudo journalctl -u sleuth -f
 
 ---
 
+## Custom themes
+
+Two themes are built into the binary (`material_dark.css`, `dark_theme.css`). To use a custom theme without rebuilding:
+
+1. Create the CSS directory alongside the binary:
+
+```bash
+sudo mkdir -p /opt/sleuth/static/css
+```
+
+2. Place your CSS file there:
+
+```bash
+sudo cp mytheme.css /opt/sleuth/static/css/mytheme.css
+sudo chown sleuth:sleuth /opt/sleuth/static/css/mytheme.css
+```
+
+3. Set it in `config.toml`:
+
+```toml
+[server]
+theme = "mytheme.css"
+```
+
+Files in `static/css/` on disk take precedence over the embedded copies, so the same approach can override a built-in theme. A reload (`sudo systemctl reload sleuth`) is not enough — the theme is served per-request, so the browser just needs a hard refresh.
+
+---
+
 ## TLS (HTTPS)
 
 ### Using your own certificate

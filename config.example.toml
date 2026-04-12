@@ -4,7 +4,7 @@
 [server]
 port = 5000
 log_level = "warn"              # debug | info | warn | error
-theme = "material_dark.css"     # file in static/css/  (material_dark.css or dark_theme.css)
+theme = "material_dark.css"     # file in static/css/  (material_dark.css, dark_theme.css, light.css)
 title = "Service Status"
 subtitle = "Real-time health of your services."
 storage_type = "memory"         # only option currently

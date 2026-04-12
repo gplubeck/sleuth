@@ -1,0 +1,27 @@
+/* Light Theme */
+:root {
+    --primary-text: #1a1a2e;
+    --text-muted: #6c757d;
+    --background-color: #f0f2f5;
+
+    /* Status Colors */
+    --status-online: #2d6a2d;
+    --status-offline: #b52a2a;
+    --status-degraded: #b07d00;
+
+    /* Service Card */
+    --service-card-background: #ffffff;
+    --service-card-border: 1px solid #d0d5dd;
+    --service-card-border-radius: 0.5rem;
+    --service-card-margin-bottom: 1.5rem;
+
+    --service-card-hover-color: #f8f9fa;
+    --service-card-header-bg-color: #f1f3f5;
+    --service-card-header-img-border: 2px solid #ced4da;
+
+    /* Uptime Graph */
+    --uptime-segment-border: .25px solid #ced4da;
+    --uptime-segment-hover-color: #6c757d;
+
+    --service-card-time-labels-color: #868e96;
+}

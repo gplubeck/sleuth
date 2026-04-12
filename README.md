@@ -59,6 +59,27 @@ Templates and CSS are embedded in the binary, so no repo clone is needed.
 
 ---
 
+### Theming
+
+Three themes ship with the binary. Set the active theme in `config.toml`:
+
+```toml
+[server]
+theme = "material_dark.css"  # material_dark.css | dark_theme.css | light.css
+```
+
+#### Custom themes
+
+Themes are CSS files that define a set of custom properties (variables). To add your own without rebuilding:
+
+1. Create a `static/css/` directory next to the binary.
+2. Add your CSS file there (e.g. `static/css/mytheme.css`).
+3. Set `theme = "mytheme.css"` in `config.toml`.
+
+Files in `static/css/` on disk take precedence over the embedded copies, so you can also override the built-in themes the same way. See the existing theme files in `src/static/css/` for the full list of variables to define.
+
+---
+
 ### CLI options
 
 | Flag | Description |
@@ -81,10 +102,10 @@ See [DEPLOY.md](DEPLOY.md) for full instructions covering:
 ### Screenshots
 
 Material Dark Theme
-![material_dark_theme_screenshot](./static/assets/material_dark.png)
+![material_dark_theme_screenshot](./src/static/assets/material_dark.png)
 
 Dark Theme
-![dark_theme_screenshot](./static/assets/dark_theme.png)
+![dark_theme_screenshot](./src/static/assets/dark_theme.png)
 
 ---
 
