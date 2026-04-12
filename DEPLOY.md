@@ -12,8 +12,8 @@ sudo useradd --system --no-create-home --shell /usr/sbin/nologin sleuth
 
 ### 2. Set up the install directory
 
-Sleuth resolves `config.toml`, `static/`, and `.sleuth.bin` relative to its
-working directory. Keep everything together under one path:
+Templates and CSS are embedded in the binary. Sleuth only needs `config.toml`
+and a writable directory for `.sleuth.bin` (uptime history) at runtime.
 
 ```bash
 sudo mkdir -p /opt/sleuth/bin
@@ -24,7 +24,6 @@ Copy the files:
 ```bash
 sudo cp bin/sleuth        /opt/sleuth/bin/sleuth
 sudo cp config.toml       /opt/sleuth/config.toml
-sudo cp -r static/        /opt/sleuth/static/
 ```
 
 Set ownership so the `sleuth` user can write `.sleuth.bin`:

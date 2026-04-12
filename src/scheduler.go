@@ -35,7 +35,7 @@ func NewScheduler(store ServiceStore, channel chan<- []byte) *Scheduler {
 // and begins the event loop. Call once at startup.
 func (s *Scheduler) Start() {
 	slog.Debug("Starting Scheduler goroutines.")
-	for _, service := range *s.store.GetServices() {
+	for _, service := range s.store.GetServices() {
 		s.startMonitor(service)
 	}
 	go s.run()

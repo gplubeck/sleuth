@@ -8,8 +8,7 @@ import (
 	"log"
 	"log/slog"
 	"net/http"
-	"os"
-	"path/filepath"
+	"path"
 	"strings"
 	"time"
 )
@@ -27,7 +26,7 @@ func initTemplates() error {
 		"getAllHistory":    getAllHistory,
 	}
 
-	homepageTmpl, err = template.New("homepage.gohtml").Funcs(funcs).ParseFiles(
+	homepageTmpl, err = template.New("homepage.gohtml").Funcs(funcs).ParseFS(staticFS,
 		"static/templates/layout.gohtml",
 		"static/templates/header.gohtml",
 		"static/templates/homepage.gohtml",
@@ -38,7 +37,7 @@ func initTemplates() error {
 		return err
 	}
 
-	serviceCardTmpl, err = template.New("service-card").Funcs(funcs).ParseFiles(
+	serviceCardTmpl, err = template.New("service-card").Funcs(funcs).ParseFS(staticFS,
 		"static/templates/service_card.gohtml",
 		"static/templates/service_header.gohtml",
 		"static/templates/service_body.gohtml")
@@ -61,7 +60,7 @@ func loggingMiddleware(next http.Handler) http.Handler {
 
 type ServiceStore interface {
 	AddService(Service)
-	GetServices() *[]Service
+	GetServices() []Service
 	GetServiceByID(uint) (*Service, error)
 	EventUpdate(EventData) error
 	ReconcileServices([]Service)
@@ -115,7 +114,7 @@ func (server *Server) statusHandler(w http.ResponseWriter, r *http.Request) {
 		services := server.store.GetServices()
 		templateData := struct {
 			Server   *Server
-			Services *[]Service
+			Services []Service
 		}{Server: server, Services: services}
 
 		err := homepageTmpl.ExecuteTemplate(w, "layout", templateData)
@@ -148,16 +147,16 @@ func (server *Server) static(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Reject any path that tries to escape the static directory
-	clean := filepath.Clean(asset)
+	clean := path.Clean(asset)
 	if strings.Contains(clean, "..") || strings.HasPrefix(clean, "/") {
 		http.Error(w, "Invalid asset path", http.StatusBadRequest)
 		return
 	}
 
-	file, err := os.Open(filepath.Join("static", filetype, clean))
+	file, err := staticFS.Open(path.Join("static", filetype, clean))
 	if err != nil {
 		log.Printf("Failed to serve static file %s. Error: %s ", asset, err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 	defer file.Close()

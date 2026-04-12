@@ -29,10 +29,12 @@ func NewInMemoryStore(noHistory bool) (*InMemoryStore, error) {
 	return i, nil
 }
 
-func (i *InMemoryStore) GetServices() *[]Service {
+func (i *InMemoryStore) GetServices() []Service {
 	i.Lock()
 	defer i.Unlock()
-	return &i.store
+	out := make([]Service, len(i.store))
+	copy(out, i.store)
+	return out
 }
 // Add service to slice
 // Todo add autogenerating IDs that figure out if it is a new service or just updated

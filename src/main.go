@@ -87,7 +87,7 @@ func main() {
 					newConfig := parseConfigs(configPath)
 
 					// Snapshot current IDs before touching the store
-					current := *store.GetServices()
+					current := store.GetServices()
 					currentIDs := make(map[uint]bool, len(current))
 					for _, s := range current {
 						currentIDs[s.ID] = true

@@ -1,0 +1,61 @@
+# Sleuth example configuration
+# Copy this file to config.toml and edit to suit your setup.
+
+[server]
+port = 5000
+log_level = "warn"              # debug | info | warn | error
+theme = "material_dark.css"     # file in static/css/  (material_dark.css or dark_theme.css)
+title = "Service Status"
+subtitle = "Real-time health of your services."
+storage_type = "memory"         # only option currently
+
+# Optional TLS — omit both to serve plain HTTP
+# cert_file = "server.pem"
+# cert_key  = "server-key.pem"
+
+
+# ---- TCP service ----
+[[service]]
+id = 1
+service_name = "My App"
+address = "myapp.example.com:443"   # host:port required
+protocol_str = "TCP"
+timer = 30                          # probe interval in seconds
+MaxHistory = 100                    # ring-buffer size (default 100)
+link = "https://myapp.example.com"  # optional — makes the card header a link
+icon = "https://example.com/icon.png" # optional — img src (local path or URL)
+
+
+# ---- UDP service ----
+[[service]]
+id = 2
+service_name = "Game Server"
+address = "game.example.com:25565"
+protocol_str = "UDP"
+timer = 60
+MaxHistory = 40
+
+
+# ---- HTTP health check ----
+# address must be a full URL (http:// or https://)
+[[service]]
+id = 3
+service_name = "API Health"
+address = "https://api.example.com/health"
+protocol_str = "HTTP"
+timer = 30
+MaxHistory = 100
+# http_expected_status = 200   # accept only this exact status code
+# http_expected_category = 2   # accept any 2xx (1–5); mutually exclusive with http_expected_status
+# http_skip_tls_verify = true  # skip TLS cert check (useful for self-signed certs)
+
+
+# ---- Test service (random ~50% up) ----
+# Useful for verifying your layout before you have real services to monitor.
+[[service]]
+id = 4
+service_name = "Test Service"
+address = "localhost:0"   # not used for Test protocol
+protocol_str = "Test"
+timer = 5
+MaxHistory = 40

@@ -51,7 +51,7 @@ func TestAddService_Single(t *testing.T) {
 	store := newTestStore()
 	store.AddService(newStoreService(1, "Alpha"))
 
-	services := *store.GetServices()
+	services := store.GetServices()
 	if len(services) != 1 {
 		t.Fatalf("expected 1 service, got %d", len(services))
 	}
@@ -66,8 +66,8 @@ func TestAddService_Multiple(t *testing.T) {
 		newStoreService(2, "Beta"),
 		newStoreService(3, "Gamma"),
 	)
-	if len(*store.GetServices()) != 3 {
-		t.Errorf("expected 3 services, got %d", len(*store.GetServices()))
+	if len(store.GetServices()) != 3 {
+		t.Errorf("expected 3 services, got %d", len(store.GetServices()))
 	}
 }
 
@@ -167,8 +167,8 @@ func TestReconcile_AddsNewServices(t *testing.T) {
 		newStoreService(2, "Beta"),
 	})
 
-	if len(*store.GetServices()) != 2 {
-		t.Errorf("expected 2 services after reconcile, got %d", len(*store.GetServices()))
+	if len(store.GetServices()) != 2 {
+		t.Errorf("expected 2 services after reconcile, got %d", len(store.GetServices()))
 	}
 }
 
@@ -180,7 +180,7 @@ func TestReconcile_RemovesStaleServices(t *testing.T) {
 	// Config only has Alpha now
 	store.ReconcileServices([]Service{newStoreService(1, "Alpha")})
 
-	services := *store.GetServices()
+	services := store.GetServices()
 	if len(services) != 1 {
 		t.Fatalf("expected 1 service after reconcile, got %d", len(services))
 	}
@@ -217,7 +217,7 @@ func TestReconcile_PreservesRuntimeState(t *testing.T) {
 	store.EventUpdate(EventData{ServiceID: 1, Status: true, Timestamp: ts})
 	store.EventUpdate(EventData{ServiceID: 1, Status: true, Timestamp: ts.Add(time.Second)})
 
-	historyBefore := *store.GetServices()
+	historyBefore := store.GetServices()
 	sizeBefore := historyBefore[0].History.GetSize()
 
 	// Reconcile with an updated name — runtime state must survive
@@ -243,7 +243,7 @@ func TestReconcile_RenumberedID(t *testing.T) {
 
 	store.ReconcileServices([]Service{newStoreService(2, "Alpha")})
 
-	services := *store.GetServices()
+	services := store.GetServices()
 	if len(services) != 1 {
 		t.Fatalf("expected 1 service, got %d", len(services))
 	}
@@ -263,8 +263,8 @@ func TestReconcile_EmptyConfig_RemovesAll(t *testing.T) {
 	)
 	store.ReconcileServices([]Service{})
 
-	if len(*store.GetServices()) != 0 {
-		t.Errorf("expected empty store after reconcile with no config, got %d", len(*store.GetServices()))
+	if len(store.GetServices()) != 0 {
+		t.Errorf("expected empty store after reconcile with no config, got %d", len(store.GetServices()))
 	}
 }
 
@@ -275,7 +275,7 @@ func TestReconcile_NoOp_WhenUnchanged(t *testing.T) {
 
 	store.ReconcileServices([]Service{svc})
 
-	services := *store.GetServices()
+	services := store.GetServices()
 	if len(services) != 1 {
 		t.Fatalf("expected 1 service, got %d", len(services))
 	}
@@ -298,7 +298,7 @@ func TestSaveLoad_RoundTrip(t *testing.T) {
 	}
 
 	loaded, _ := NewInMemoryStore(false) // noHistory=false → loads from disk
-	services := *loaded.GetServices()
+	services := loaded.GetServices()
 
 	if len(services) != 2 {
 		t.Fatalf("expected 2 services after load, got %d", len(services))
@@ -347,7 +347,7 @@ func TestLoad_NoHistory_IgnoresBin(t *testing.T) {
 	original.Save()
 
 	store, _ := NewInMemoryStore(true) // should ignore .sleuth.bin
-	if len(*store.GetServices()) != 0 {
+	if len(store.GetServices()) != 0 {
 		t.Error("expected empty store when noHistory=true, even if .sleuth.bin exists")
 	}
 }
