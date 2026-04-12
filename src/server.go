@@ -21,10 +21,13 @@ var (
 
 func initTemplates() error {
 	var err error
-	homepageTmpl, err = template.New("homepage.gohtml").Funcs(template.FuncMap{
-		"formatTime":    formatTime,
-		"getAllHistory": getAllHistory,
-	}).ParseFiles(
+	funcs := template.FuncMap{
+		"formatTime":      formatTime,
+		"formatTimestamp": formatTimestamp,
+		"getAllHistory":    getAllHistory,
+	}
+
+	homepageTmpl, err = template.New("homepage.gohtml").Funcs(funcs).ParseFiles(
 		"static/templates/layout.gohtml",
 		"static/templates/header.gohtml",
 		"static/templates/homepage.gohtml",
@@ -35,10 +38,7 @@ func initTemplates() error {
 		return err
 	}
 
-	serviceCardTmpl, err = template.New("service-card").Funcs(template.FuncMap{
-		"getAllHistory": getAllHistory,
-		"formatTime":    formatTime,
-	}).ParseFiles(
+	serviceCardTmpl, err = template.New("service-card").Funcs(funcs).ParseFiles(
 		"static/templates/service_card.gohtml",
 		"static/templates/service_header.gohtml",
 		"static/templates/service_body.gohtml")
@@ -240,12 +240,23 @@ func (server *Server) updateHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// formatTime is used for the time-range labels under the uptime graph.
+// Shows time-only when the timestamp is from today (local time), otherwise
+// includes the date so the label makes sense across day boundaries.
 func formatTime(t time.Time) string {
 	now := time.Now()
-	midnight := now.Truncate(24 * time.Hour)
-	dateTest := t.Truncate(24 * time.Hour)
-	if dateTest.Equal(midnight) {
+	y, m, d := now.Date()
+	localMidnight := time.Date(y, m, d, 0, 0, 0, 0, now.Location())
+	ty, tm, td := t.Date()
+	tMidnight := time.Date(ty, tm, td, 0, 0, 0, 0, t.Location())
+	if tMidnight.Equal(localMidnight) {
 		return t.Format("15:04:05")
 	}
-    return t.Format("01-02 15:04:05")
+	return t.Format("01-02 15:04:05")
+}
+
+// formatTimestamp is used for segment tooltips and always returns the full
+// date+time so every tooltip in a card uses the same format.
+func formatTimestamp(t time.Time) string {
+	return t.Format("01-02 15:04:05")
 }

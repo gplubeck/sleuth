@@ -8,7 +8,7 @@
     <div class="uptime-graph-container">
         {{range $history}}
         <div class="uptime-segment {{if .Status}} green {{else}} red {{end}}"
-            style="flex-grow: 1;" data-bs-toggle="tooltip" title="{{ formatTime .Timestamp }}">
+            style="flex-grow: 1;" data-bs-toggle="tooltip" title="{{ formatTimestamp .Timestamp }}">
         </div>
         {{end}}
     </div>

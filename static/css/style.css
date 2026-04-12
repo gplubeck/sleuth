@@ -96,17 +96,12 @@ header {
 .uptime-segment {
     height: 100%;
     flex-grow: 1;
-    transition: all 0.3s ease-in-out;
+    transition: box-shadow 0.2s ease-in-out;
     border: var(--uptime-segment-border);
 }
 
 .uptime-segment:hover {
-    border: var(--uptime-segment-hover-border);
-}
-
-.uptime-segment:hover .hover-text {
-    visibility: var(--uptime-segment-hover-text-visibility);
-    opacity: var(--uptime-segment-hover-text-opacity);
+    box-shadow: inset 0 0 0 2px var(--uptime-segment-hover-color);
 }
 
 .uptime-segment.green {
