@@ -11,15 +11,16 @@ import (
 // newStoreService builds a service with an initialized history buffer,
 // suitable for use in store tests.
 func newStoreService(id uint, name string) Service {
-	return Service{
+	s := Service{
 		ID:             id,
 		Name:           name,
 		Address:        "localhost:8080",
 		ProtocolString: "TCP",
-		protocol:       NewProtocol("TCP"),
 		Timer:          30,
 		History:        ringbuffer.NewRingBuffer[EventData](10),
 	}
+	s.protocol = NewProtocol(s)
+	return s
 }
 
 // newTestStore returns a fresh in-memory store pre-loaded with the given services.

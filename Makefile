@@ -44,3 +44,9 @@ run:
 production:
 	@echo -n 'Enter Build version number (e.g. 0.0.5): ' && read ans &&\
 		GOOS=linux GOARCH=amd64 $(GOBUILD) -ldflags="-s -X 'main.Version=$$ans' -X 'main.BuildTime=$(BUILD_TIME)'" -o bin/$(BINARY_NAME) $(SRC)
+
+## release: Non-interactive release build. Requires VERSION, GOOS, GOARCH env vars.
+##          Example: VERSION=1.0.0 GOOS=linux GOARCH=amd64 make release
+release:
+	$(GOBUILD) -ldflags="-s -X 'main.Version=$(VERSION)' -X 'main.BuildTime=$(BUILD_TIME)'" \
+		-o bin/$(BINARY_NAME)-$(GOOS)-$(GOARCH) $(SRC)

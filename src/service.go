@@ -2,10 +2,14 @@ package main
 
 import (
 	"bytes"
+	"crypto/tls"
 	"errors"
+	"fmt"
+	"io"
 	"log/slog"
 	"math/rand"
 	"net"
+	"net/http"
 	"sleuth/internal/ringbuffer"
 	"strings"
 	"time"
@@ -14,18 +18,22 @@ import (
 type Service struct {
 	ID             uint                             `toml:"id"`
 	Name           string                           `toml:"service_name"`
-	Address        string                           `toml:"address"`  //maybe should eventual be its own IP/FQDN type
-	Link           string                           `toml:"link"`     //used for onclick functionality must provide http:// or https:// if left blank, no link
-	protocol       Protocol                         `toml:"protocol"` //interface to allow for Strategy Pattern and future expansion
+	Address        string                           `toml:"address"`  // host:port for TCP/UDP; full URL for HTTP
+	Link           string                           `toml:"link"`     // used for onclick functionality; must include http:// or https://
+	protocol       Protocol                         `toml:"protocol"` // interface to allow for Strategy Pattern and future expansion
 	ProtocolString string                           `toml:"protocol_str"`
 	Start          time.Time                        `toml:"start_time"`
 	LastUpdate     time.Time                        `toml:"update_time"`
 	Status         bool                             `toml:"status"`
 	Uptime         float64                          `toml:"uptime"`
-	Timer          int                              //how often to check service in seconds
-	Icon           string                           //name of icon to use from /assets/icons
+	Timer          int                              // how often to check service in seconds
+	Icon           string                           // name of icon to use from /assets/icons
 	History        ringbuffer.RingBuffer[EventData] `toml:"uptime_history"`
-    MaxHistorySize int                              `toml:"maxHistory"` //number of Events to hold
+	MaxHistorySize int                              `toml:"maxHistory"` // number of Events to hold
+	// HTTP-specific fields (ignored for TCP/UDP)
+	HTTPExpectedStatus   int  `toml:"http_expected_status"`   // exact status code; 0 = use category
+	HTTPExpectedCategory int  `toml:"http_expected_category"` // 1–5 (first digit); 0 = default to 2 (any 2xx)
+	HTTPSkipTLSVerify    bool `toml:"http_skip_tls_verify"`   // skip TLS cert verification (self-signed certs)
 }
 
 /*****************************************
@@ -38,12 +46,23 @@ type Protocol interface {
 	Connect(address string, timeout time.Duration) (net.Conn, error)
 }
 
-func NewProtocol(protocol string) Protocol {
-	switch protocol {
+func NewProtocol(service Service) Protocol {
+	switch service.ProtocolString {
 	case "TCP":
 		return &TCPProtocol{Protocol: "TCP"}
 	case "UDP":
 		return &UDPProtocol{Protocol: "UDP"}
+	case "HTTP":
+		return &HTTPProtocol{
+			expectedStatus:   service.HTTPExpectedStatus,
+			expectedCategory: service.HTTPExpectedCategory,
+			client: &http.Client{
+				Timeout: 10 * time.Second,
+				Transport: &http.Transport{
+					TLSClientConfig: &tls.Config{InsecureSkipVerify: service.HTTPSkipTLSVerify},
+				},
+			},
+		}
 	case "Test":
 		return &TestProtocol{Protocol: "Test"}
 	default:
@@ -77,12 +96,40 @@ func (u *UDPProtocol) Connect(address string, timeout time.Duration) (net.Conn, 
 	return net.DialTimeout("udp", address, timeout)
 }
 
-// Generic unimplemented type to allow for future growth
-// Use for implementing things like Githubs health check
-type HTTPProtocol struct{}
+type HTTPProtocol struct {
+	expectedStatus   int // 0 = unset, use category
+	expectedCategory int // 0 = unset, default to 2 (any 2xx)
+	client           *http.Client
+}
 
-func (h *HTTPProtocol) Connect(address string, timout time.Duration) (net.Conn, error) {
-	//stubbed interface not yet implemented
+func (h *HTTPProtocol) String() string {
+	return "HTTP"
+}
+
+func (h *HTTPProtocol) Connect(address string, timeout time.Duration) (net.Conn, error) {
+	h.client.Timeout = timeout
+
+	resp, err := h.client.Get(address)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	io.Copy(io.Discard, resp.Body) // drain so connection can be reused
+
+	if h.expectedStatus != 0 {
+		if resp.StatusCode != h.expectedStatus {
+			return nil, fmt.Errorf("HTTP check failed: got %d, want %d", resp.StatusCode, h.expectedStatus)
+		}
+		return nil, nil
+	}
+
+	category := h.expectedCategory
+	if category == 0 {
+		category = 2 // default: any 2xx
+	}
+	if resp.StatusCode/100 != category {
+		return nil, fmt.Errorf("HTTP check failed: got %d, want %dxx", resp.StatusCode, category)
+	}
 	return nil, nil
 }
 

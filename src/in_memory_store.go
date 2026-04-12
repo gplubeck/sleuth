@@ -91,6 +91,9 @@ func (i *InMemoryStore) ReconcileServices(services []Service) {
 		i.store[idx].protocol = cfg.protocol
 		i.store[idx].Icon = cfg.Icon
 		i.store[idx].Link = cfg.Link
+		i.store[idx].HTTPExpectedStatus = cfg.HTTPExpectedStatus
+		i.store[idx].HTTPExpectedCategory = cfg.HTTPExpectedCategory
+		i.store[idx].HTTPSkipTLSVerify = cfg.HTTPSkipTLSVerify
 	}
 
 	// Add services that are in config but not yet in the store
@@ -169,7 +172,7 @@ func (i *InMemoryStore) Load() error {
         for _, service := range *tmpStore {
             // make the interface
             if service.protocol == nil {
-                service.protocol = NewProtocol(service.ProtocolString)
+                service.protocol = NewProtocol(service)
             }
             i.store = append(i.store, service)
         }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
+	"net/url"
 	"sleuth/internal/ringbuffer"
 	"strings"
 	"time"
@@ -35,9 +36,32 @@ func validateConfig(config *Config) error {
 		if service.Timer <= 0 {
 			return fmt.Errorf("service %q: timer must be greater than 0", service.Name)
 		}
-		if NewProtocol(service.ProtocolString) == nil {
+		if NewProtocol(service) == nil {
 			return fmt.Errorf("service %q: unknown protocol %q", service.Name, service.ProtocolString)
 		}
+		if err := validateHTTPService(service, i); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func validateHTTPService(service Service, i int) error {
+	if service.ProtocolString != "HTTP" {
+		return nil
+	}
+	u, err := url.Parse(service.Address)
+	if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
+		return fmt.Errorf("service %q (index %d): HTTP protocol requires a full URL (e.g. https://host/path), got %q",
+			service.Name, i, service.Address)
+	}
+	if service.HTTPExpectedStatus != 0 && service.HTTPExpectedCategory != 0 {
+		return fmt.Errorf("service %q: set either http_expected_status or http_expected_category, not both",
+			service.Name)
+	}
+	if service.HTTPExpectedCategory != 0 && (service.HTTPExpectedCategory < 1 || service.HTTPExpectedCategory > 5) {
+		return fmt.Errorf("service %q: http_expected_category must be 1–5, got %d",
+			service.Name, service.HTTPExpectedCategory)
 	}
 	return nil
 }
@@ -55,7 +79,7 @@ func parseConfigs(configFile string) Config {
 	}
 
 	for i, service := range config.Services {
-		config.Services[i].protocol = NewProtocol(service.ProtocolString)
+		config.Services[i].protocol = NewProtocol(service)
 		config.Services[i].Start = time.Now()
 		slog.Debug("Parsed service.", "service", service)
 		maxSize := config.Services[i].MaxHistorySize
