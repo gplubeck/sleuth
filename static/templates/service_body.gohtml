@@ -1,23 +1,28 @@
 <!-- Body for service.  Gets swapped with htmx -->
 {{define "service-body"}}
 
+{{$history := getAllHistory .History}}
 <div class="service-body">
+    {{if $history}}
     <!-- Uptime Graph -->
     <div class="uptime-graph-container">
-        {{range getAllHistory .History }}
-        <div class="uptime-segment {{if .Status }} green {{else}} red {{end}}"
-            style="flex-grow: 1;" data-bs-toggle="tooltip" title= "{{ formatTime .Timestamp }}">
+        {{range $history}}
+        <div class="uptime-segment {{if .Status}} green {{else}} red {{end}}"
+            style="flex-grow: 1;" data-bs-toggle="tooltip" title="{{ formatTime .Timestamp }}">
         </div>
         {{end}}
     </div>
     <div class="time-labels">
         <span>{{formatTime .Start}}</span><span>Now</span>
     </div>
-    <p ><strong>Uptime:</strong>
-    <span class="uptime-info {{if gt .Uptime 89.9}} green {{else if gt .Uptime 79.9}} yellow {{else}} red {{end}}">
-        {{printf "%.2f" .Uptime}}%
-    </span>
+    <p><strong>Uptime:</strong>
+        <span class="uptime-info {{if gt .Uptime 89.9}} green {{else if gt .Uptime 79.9}} yellow {{else}} red {{end}}">
+            {{printf "%.2f" .Uptime}}%
+        </span>
     </p>
+    {{else}}
+    <div class="uptime-empty">Waiting for first health check&hellip;</div>
+    {{end}}
 </div>
 
 {{end}}
