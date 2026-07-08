@@ -50,6 +50,7 @@ MaxHistory = 100
 # http_expected_status = 200   # accept only this exact status code
 # http_expected_category = 2   # accept any 2xx (1–5); mutually exclusive with http_expected_status
 # http_skip_tls_verify = true  # skip TLS cert check (useful for self-signed certs)
+# http_expected_body_contains = '"status":"ok"'  # substring required in response body (checked alongside status/category); use single quotes so inner quotes need no escaping
 
 
 # ---- Test service (random ~50% up) ----

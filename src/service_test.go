@@ -168,6 +168,68 @@ func TestHTTPProtocol_TLSVerifyFails(t *testing.T) {
 	}
 }
 
+// ---- body content check ----
+
+func TestHTTPProtocol_BodyContainsMatch(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"status":"ok","db":"connected"}`))
+	}))
+	defer srv.Close()
+
+	s := httpServiceWith(Service{HTTPExpectedBodyContains: `"status":"ok"`})
+	_, err := s.protocol.Connect(srv.URL, 2*time.Second)
+	if err != nil {
+		t.Errorf("expected success when body contains expected substring, got: %v", err)
+	}
+}
+
+func TestHTTPProtocol_BodyContainsMismatch(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"status":"degraded"}`))
+	}))
+	defer srv.Close()
+
+	s := httpServiceWith(Service{HTTPExpectedBodyContains: `"status":"ok"`})
+	_, err := s.protocol.Connect(srv.URL, 2*time.Second)
+	if err == nil {
+		t.Error("expected error when body does not contain expected substring, got nil")
+	}
+}
+
+func TestHTTPProtocol_BodyContainsSkippedWhenUnset(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`anything at all`))
+	}))
+	defer srv.Close()
+
+	s := httpServiceWith(Service{})
+	_, err := s.protocol.Connect(srv.URL, 2*time.Second)
+	if err != nil {
+		t.Errorf("expected success when body check is unset, got: %v", err)
+	}
+}
+
+func TestHTTPProtocol_BodyContainsCombinedWithStatus(t *testing.T) {
+	// status matches but body doesn't — should still fail
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"status":"degraded"}`))
+	}))
+	defer srv.Close()
+
+	s := httpServiceWith(Service{
+		HTTPExpectedStatus:       http.StatusOK,
+		HTTPExpectedBodyContains: `"status":"ok"`,
+	})
+	_, err := s.protocol.Connect(srv.URL, 2*time.Second)
+	if err == nil {
+		t.Error("expected error when status matches but body does not, got nil")
+	}
+}
+
 // ---- NewProtocol ----
 
 func TestNewProtocol_HTTP(t *testing.T) {
@@ -182,10 +244,11 @@ func TestNewProtocol_HTTP(t *testing.T) {
 
 func TestNewProtocol_HTTPFieldsPropagated(t *testing.T) {
 	p := NewProtocol(Service{
-		ProtocolString:       "HTTP",
-		HTTPExpectedStatus:   201,
-		HTTPExpectedCategory: 0,
-		HTTPSkipTLSVerify:    true,
+		ProtocolString:           "HTTP",
+		HTTPExpectedStatus:       201,
+		HTTPExpectedCategory:     0,
+		HTTPSkipTLSVerify:        true,
+		HTTPExpectedBodyContains: `"status":"ok"`,
 	})
 	hp, ok := p.(*HTTPProtocol)
 	if !ok {
@@ -193,6 +256,9 @@ func TestNewProtocol_HTTPFieldsPropagated(t *testing.T) {
 	}
 	if hp.expectedStatus != 201 {
 		t.Errorf("expectedStatus: got %d, want 201", hp.expectedStatus)
+	}
+	if hp.expectedBodyContains != `"status":"ok"` {
+		t.Errorf("expectedBodyContains: got %q, want %q", hp.expectedBodyContains, `"status":"ok"`)
 	}
 	if hp.client == nil {
 		t.Error("client should be initialized")

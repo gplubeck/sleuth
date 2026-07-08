@@ -57,6 +57,7 @@ Templates and CSS are embedded in the binary, so no repo clone is needed.
 | `http_expected_status` | `0` (any 2xx) | Accept only this exact HTTP status code. Mutually exclusive with `http_expected_category`. |
 | `http_expected_category` | `0` (2xx) | Accept any response whose first digit matches (1–5). Mutually exclusive with `http_expected_status`. |
 | `http_skip_tls_verify` | `false` | Skip TLS certificate verification. Useful for self-signed certs. |
+| `http_expected_body_contains` | — | Substring the response body must contain (e.g. `"status":"ok"`). Checked in addition to the status/category check, so a health endpoint that returns 200 with a JSON status field can be validated on both. Response bodies are capped at 1MB while checking. |
 
 ---
 

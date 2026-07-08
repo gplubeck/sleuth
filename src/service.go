@@ -33,9 +33,10 @@ type Service struct {
 	History        ringbuffer.RingBuffer[EventData] `toml:"uptime_history"`
 	MaxHistorySize int                              `toml:"maxHistory"` // number of Events to hold
 	// HTTP-specific fields (ignored for TCP/UDP)
-	HTTPExpectedStatus   int  `toml:"http_expected_status"`   // exact status code; 0 = use category
-	HTTPExpectedCategory int  `toml:"http_expected_category"` // 1–5 (first digit); 0 = default to 2 (any 2xx)
-	HTTPSkipTLSVerify    bool `toml:"http_skip_tls_verify"`   // skip TLS cert verification (self-signed certs)
+	HTTPExpectedStatus       int    `toml:"http_expected_status"`        // exact status code; 0 = use category
+	HTTPExpectedCategory     int    `toml:"http_expected_category"`      // 1–5 (first digit); 0 = default to 2 (any 2xx)
+	HTTPSkipTLSVerify        bool   `toml:"http_skip_tls_verify"`        // skip TLS cert verification (self-signed certs)
+	HTTPExpectedBodyContains string `toml:"http_expected_body_contains"` // substring required in response body; "" = skip check
 }
 
 /*****************************************
@@ -56,8 +57,9 @@ func NewProtocol(service Service) Protocol {
 		return &UDPProtocol{Protocol: "UDP"}
 	case "HTTP":
 		return &HTTPProtocol{
-			expectedStatus:   service.HTTPExpectedStatus,
-			expectedCategory: service.HTTPExpectedCategory,
+			expectedStatus:       service.HTTPExpectedStatus,
+			expectedCategory:     service.HTTPExpectedCategory,
+			expectedBodyContains: service.HTTPExpectedBodyContains,
 			client: &http.Client{
 				Timeout: 10 * time.Second,
 				Transport: &http.Transport{
@@ -99,10 +101,15 @@ func (u *UDPProtocol) Connect(address string, timeout time.Duration) (net.Conn, 
 }
 
 type HTTPProtocol struct {
-	expectedStatus   int // 0 = unset, use category
-	expectedCategory int // 0 = unset, default to 2 (any 2xx)
-	client           *http.Client
+	expectedStatus       int    // 0 = unset, use category
+	expectedCategory     int    // 0 = unset, default to 2 (any 2xx)
+	expectedBodyContains string // "" = skip body check
+	client               *http.Client
 }
+
+// maxHealthBodyBytes caps how much of a health-check response body we'll
+// read into memory when http_expected_body_contains is set.
+const maxHealthBodyBytes = 1 << 20 // 1MB
 
 func (h *HTTPProtocol) String() string {
 	return "HTTP"
@@ -116,21 +123,34 @@ func (h *HTTPProtocol) Connect(address string, timeout time.Duration) (net.Conn,
 		return nil, err
 	}
 	defer resp.Body.Close()
-	io.Copy(io.Discard, resp.Body) // drain so connection can be reused
 
 	if h.expectedStatus != 0 {
 		if resp.StatusCode != h.expectedStatus {
+			io.Copy(io.Discard, resp.Body) // drain so connection can be reused
 			return nil, fmt.Errorf("HTTP check failed: got %d, want %d", resp.StatusCode, h.expectedStatus)
 		}
+	} else {
+		category := h.expectedCategory
+		if category == 0 {
+			category = 2 // default: any 2xx
+		}
+		if resp.StatusCode/100 != category {
+			io.Copy(io.Discard, resp.Body) // drain so connection can be reused
+			return nil, fmt.Errorf("HTTP check failed: got %d, want %dxx", resp.StatusCode, category)
+		}
+	}
+
+	if h.expectedBodyContains == "" {
+		io.Copy(io.Discard, resp.Body) // drain so connection can be reused
 		return nil, nil
 	}
 
-	category := h.expectedCategory
-	if category == 0 {
-		category = 2 // default: any 2xx
+	body, err := io.ReadAll(io.LimitReader(resp.Body, maxHealthBodyBytes))
+	if err != nil {
+		return nil, fmt.Errorf("HTTP check failed: could not read response body: %w", err)
 	}
-	if resp.StatusCode/100 != category {
-		return nil, fmt.Errorf("HTTP check failed: got %d, want %dxx", resp.StatusCode, category)
+	if !strings.Contains(string(body), h.expectedBodyContains) {
+		return nil, fmt.Errorf("HTTP check failed: response body did not contain %q", h.expectedBodyContains)
 	}
 	return nil, nil
 }
