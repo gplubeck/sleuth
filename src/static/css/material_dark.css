@@ -26,5 +26,11 @@
     --service-card-time-labels-color: #868e96; /* Light grayish text for time labels */
 
     --response-time-display: block;
+
+    /* Structural extras */
+    --border-color: #3a3f47;
+    --accent-color: #93a3e0; /* dusty ink-blue used for focus rings / links */
+    --card-shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -12px rgba(0, 0, 0, .55);
+    --card-shadow-hover: 0 1px 2px rgba(0, 0, 0, .4), 0 16px 32px -14px rgba(0, 0, 0, .6);
 }
 

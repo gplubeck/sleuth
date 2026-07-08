@@ -1,13 +1,18 @@
 /*@import url('theme.css');*/
+
 html {
-    background-color: var(--background-color); 
-}
-body {
     background-color: var(--background-color);
 }
 
+body {
+    background-color: var(--background-color);
+    font-family: var(--font-body, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif);
+}
+
 .title {
-    color: var(--primary-text); 
+    color: var(--primary-text);
+    font-family: var(--font-display, ui-serif, "Iowan Old Style", "Palatino Linotype", "URW Palladio L", Georgia, serif);
+    letter-spacing: -0.01em;
 }
 
 header {
@@ -15,19 +20,34 @@ header {
 }
 
 .text-muted {
-    color: var(--text-muted) !important; 
+    color: var(--text-muted) !important;
+}
+
+:focus-visible {
+    outline: 2px solid var(--accent-color, var(--primary-text));
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: .001ms !important;
+        transition-duration: .001ms !important;
+    }
 }
 
 /* Service Card */
 .service-card {
-    background-color: var(--service-card-background); 
+    background-color: var(--service-card-background);
     border: var(--service-card-border);
     border-radius: var(--service-card-border-radius);
     margin-bottom: var(--service-card-margin-bottom);
+    box-shadow: var(--card-shadow, 0 1px 2px rgba(0, 0, 0, .3), 0 8px 20px -14px rgba(0, 0, 0, .45));
+    transition: transform .18s ease, box-shadow .18s ease;
 }
 
 .service-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    transform: translateY(-2px);
+    box-shadow: var(--card-shadow-hover, 0 1px 2px rgba(0, 0, 0, .3), 0 16px 28px -16px rgba(0, 0, 0, .5));
     background-color: var(--service-card-hover-color);
 }
 
@@ -50,24 +70,44 @@ header {
     margin-right: 1rem;
     border-radius: 50%;
     border: var(--service-card-header-img-border);
+    object-fit: cover;
 }
 
 /* Status Indicators */
 .status-indicator {
-    font-weight: bold;
-    text-transform: capitalize;
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .2rem .55rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: .72rem;
+    letter-spacing: .02em;
+    text-transform: uppercase;
+}
+
+.status-indicator::before {
+    content: "";
+    width: .45rem;
+    height: .45rem;
+    border-radius: 50%;
+    flex: none;
 }
 
 .status-online {
     color: var(--status-online);
+    background-color: var(--status-online-soft, color-mix(in srgb, var(--status-online) 16%, transparent));
+}
+.status-online::before {
+    background-color: var(--status-online);
 }
 
 .status-offline {
     color: var(--status-offline);
+    background-color: var(--status-offline-soft, color-mix(in srgb, var(--status-offline) 16%, transparent));
 }
-
-.status-pending {
-    color: var(--status-degraded);
+.status-offline::before {
+    background-color: var(--status-offline);
 }
 
 /* Service Body */
@@ -78,6 +118,13 @@ header {
 .service-body p {
     margin-bottom: 0.5rem;
     color: var(--text-muted);
+    font-family: var(--font-mono, ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, "Liberation Mono", monospace);
+    font-variant-numeric: tabular-nums;
+}
+
+.service-body p:first-of-type {
+    padding-top: .6rem;
+    border-top: 1px dashed var(--border-color, var(--text-muted));
 }
 
 /* Uptime Graph Container */
@@ -85,7 +132,8 @@ header {
     width: 100%;
     height: 30px;
     display: flex;
-    align-items: center;
+    align-items: stretch;
+    gap: var(--uptime-gap, 2px);
     position: relative;
     overflow: hidden;
     border-radius: 0.25rem;
@@ -96,11 +144,13 @@ header {
 .uptime-segment {
     height: 100%;
     flex-grow: 1;
-    transition: box-shadow 0.2s ease-in-out;
+    border-radius: var(--uptime-segment-radius, 2px);
+    transition: transform .12s ease;
     border: var(--uptime-segment-border);
 }
 
 .uptime-segment:hover {
+    transform: scaleY(1.15);
     box-shadow: inset 0 0 0 2px var(--uptime-segment-hover-color);
 }
 
@@ -122,10 +172,14 @@ header {
     justify-content: space-between;
     margin-top: 0.5rem;
     font-size: 0.75rem;
+    font-family: var(--font-mono, ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, "Liberation Mono", monospace);
     color: var(--service-card-time-labels-color);
 }
 
 /* uptime percent */
+.uptime-info {
+    font-weight: 600;
+}
 .uptime-info.green {
     color: var(--status-online);
 }
