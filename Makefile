@@ -24,7 +24,7 @@ all: build test
 ## build: builds debug version of slueth and places in bin/
 build:
 	@echo "files: ${SRC_FILES}"
-	$(GOBUILD) -ldflags="-s -X 'main.Version=DEBUG' -X 'main.BuildTime=$(BUILD_TIME)'" -o bin/$(BINARY_NAME) $(SRC)
+	CGO_ENABLED=0 $(GOBUILD) -ldflags="-s -X 'main.Version=DEBUG' -X 'main.BuildTime=$(BUILD_TIME)'" -o bin/$(BINARY_NAME) $(SRC)
 
 ## test: runs all tests
 test:

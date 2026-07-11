@@ -116,3 +116,36 @@ func TestGetAll(t *testing.T) {
     }
 }
 
+// regression: wrapped, not-full state (Head < Tail) reached via Pop after
+// overwrite previously returned duplicated/wrong elements from GetAll
+func TestGetAllWrappedAfterPop(t *testing.T) {
+    r := NewRingBuffer[int](4)
+    // fill and overwrite so Head/Tail wrap: buffer now holds 2,3,4,5
+    r.Push(1)
+    r.Push(2)
+    r.Push(3)
+    r.Push(4)
+    r.Push(5)
+
+    // pop oldest (2) -> Head=1, Tail=2, not full: wrapped non-full state
+    popped, isEmpty := r.Pop()
+    if isEmpty || popped != 2 {
+        t.Fatalf("Pop. result = %d, isEmpty = %v; expected 2, false", popped, isEmpty)
+    }
+
+    ints := r.GetAll()
+    expected := []int{3, 4, 5}
+
+    if len(ints) != len(expected) {
+        t.Fatalf("GetAll wrapped. result = %v; expected %v", ints, expected)
+    }
+    for i := range ints {
+        if expected[i] != ints[i] {
+            t.Errorf("GetAll wrapped. result = %v; expected %v", ints, expected)
+        }
+    }
+    if size := r.GetSize(); size != 3 {
+        t.Errorf("GetSize wrapped. result = %d; expected 3", size)
+    }
+}
+

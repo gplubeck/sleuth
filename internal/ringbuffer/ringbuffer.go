@@ -89,7 +89,7 @@ func (r *RingBuffer[T]) GetAll() []T {
             result = append(result, r.Data[r.Tail:r.Head]...)
         } else {
             result = append(result, r.Data[r.Tail:]...)
-            result = append(result, r.Data[r.Head:]...)
+            result = append(result, r.Data[:r.Head]...)
         }
     }
 
