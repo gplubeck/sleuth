@@ -203,6 +203,7 @@ func (service *Service) getStatus() response {
 
 	if err != nil {
 		resp.Status = false
+		slog.Debug("Health check failed.", "service", service.Name, "id", service.ID, "error", err.Error())
 	} else {
 		resp.Status = true
 		//defer in here because conn.Close on an error will segfault

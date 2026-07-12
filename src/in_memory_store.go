@@ -7,6 +7,7 @@ import (
 	"errors"
 	"log/slog"
 	"os"
+	"sleuth/internal/ringbuffer"
 	"sync"
 )
 
@@ -89,6 +90,7 @@ func (i *InMemoryStore) ReconcileServices(services []Service) {
 		i.store[idx].Name = cfg.Name
 		i.store[idx].Address = cfg.Address
 		i.store[idx].Timer = cfg.Timer
+		i.store[idx].Timeout = cfg.Timeout
 		i.store[idx].ProtocolString = cfg.ProtocolString
 		i.store[idx].protocol = cfg.protocol
 		i.store[idx].Icon = cfg.Icon
@@ -96,6 +98,19 @@ func (i *InMemoryStore) ReconcileServices(services []Service) {
 		i.store[idx].HTTPExpectedStatus = cfg.HTTPExpectedStatus
 		i.store[idx].HTTPExpectedCategory = cfg.HTTPExpectedCategory
 		i.store[idx].HTTPSkipTLSVerify = cfg.HTTPSkipTLSVerify
+		i.store[idx].HTTPExpectedBodyContains = cfg.HTTPExpectedBodyContains
+
+		// Resize history when MaxHistory changed: replay existing events into
+		// a fresh ring buffer (oldest naturally truncated when shrinking).
+		newSize := cfg.History.MaxSize()
+		if newSize > 0 && newSize != i.store[idx].History.MaxSize() {
+			resized := ringbuffer.NewRingBuffer[EventData](newSize)
+			for _, event := range i.store[idx].History.GetAll() {
+				resized.Push(event)
+			}
+			i.store[idx].History = resized
+			i.store[idx].MaxHistorySize = cfg.MaxHistorySize
+		}
 	}
 
 	// Add services that are in config but not yet in the store
@@ -112,12 +127,6 @@ func (i *InMemoryStore) ReconcileServices(services []Service) {
 }
 
 func (i *InMemoryStore) EventUpdate(event EventData) error {
-
-	_, err := i.GetServiceByID(event.ServiceID)
-	if err != nil {
-		return err
-	}
-
 	i.Lock()
 	defer i.Unlock()
 	for idx, service := range i.store {
@@ -129,11 +138,11 @@ func (i *InMemoryStore) EventUpdate(event EventData) error {
 			i.store[idx].Uptime = i.store[idx].getUptime()
 			i.store[idx].Start = i.store[idx].updateStart()
 			slog.Debug("Updating service", "service", i.store[idx].Name)
-			break
+			return nil
 		}
 	}
 
-	return nil
+	return errors.New("Unable to get service.")
 }
 
 func (i *InMemoryStore) Save() error {

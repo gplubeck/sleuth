@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -95,9 +96,14 @@ type Server struct {
 	store ServiceStore
     publisher *Publisher
 	http.Handler
+}
 
-	//channel for json updates
-	channel <-chan []byte
+// serverView is the subset of Server exposed to templates, keeping cert
+// paths and other internals out of the template context.
+type serverView struct {
+	Title    string
+	Subtitle string
+	Theme    string
 }
 
 func (s *Server) addRoutes(mux *http.ServeMux) {
@@ -111,18 +117,26 @@ func (server *Server) statusHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodGet:
-		w.Header().Set("Content-Type", "text/html")
 		services := server.store.GetServices()
 		templateData := struct {
-			Server   *Server
+			Server   serverView
 			Services []Service
-		}{Server: server, Services: services}
+		}{
+			Server:   serverView{Title: server.Title, Subtitle: server.Subtitle, Theme: server.Theme},
+			Services: services,
+		}
 
-		err := homepageTmpl.ExecuteTemplate(w, "layout", templateData)
-		if err != nil {
+		// Render to a buffer first so a mid-render failure yields a clean
+		// 500 instead of a garbled half-page after a 200 header.
+		var buf bytes.Buffer
+		if err := homepageTmpl.ExecuteTemplate(&buf, "layout", templateData); err != nil {
 			slog.Error("Failed to execute homepage template.", "error", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
+		}
+		w.Header().Set("Content-Type", "text/html")
+		if _, err := buf.WriteTo(w); err != nil {
+			slog.Error("Failed to write homepage response.", "error", err)
 		}
 
 	default:
@@ -134,7 +148,7 @@ func (server *Server) statusHandler(w http.ResponseWriter, r *http.Request) {
 func (server *Server) static(w http.ResponseWriter, r *http.Request) {
 	filetype := r.PathValue("type")
 	asset := r.PathValue("file")
-	slog.Info("Serving file static asset.", filetype, "filetype", "asset", asset)
+	slog.Debug("Serving static asset.", "filetype", filetype, "asset", asset)
 
 	// Whitelist valid asset types to prevent path traversal
 	switch filetype {
@@ -157,6 +171,9 @@ func (server *Server) static(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid asset path", http.StatusBadRequest)
 		return
 	}
+
+	// Short-lived cache so on-disk theme edits still show up quickly
+	w.Header().Set("Cache-Control", "public, max-age=300")
 
 	diskPath := path.Join("static", filetype, clean)
 

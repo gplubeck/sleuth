@@ -209,6 +209,73 @@ func TestReconcile_UpdatesConfigFields(t *testing.T) {
 	}
 }
 
+func TestReconcile_UpdatesProbeFields(t *testing.T) {
+	store := newTestStore(newStoreService(1, "Alpha"))
+
+	updated := newStoreService(1, "Alpha")
+	updated.Timeout = 42
+	updated.HTTPExpectedBodyContains = `"status":"ok"`
+	store.ReconcileServices([]Service{updated})
+
+	s, _ := store.GetServiceByID(1)
+	if s.Timeout != 42 {
+		t.Errorf("expected Timeout=42, got %d", s.Timeout)
+	}
+	if s.HTTPExpectedBodyContains != `"status":"ok"` {
+		t.Errorf("expected HTTPExpectedBodyContains propagated, got %q", s.HTTPExpectedBodyContains)
+	}
+}
+
+func TestReconcile_ResizesHistory_PreservesNewest(t *testing.T) {
+	store := newTestStore(newStoreService(1, "Alpha"))
+
+	// Push 6 events into the size-10 buffer
+	ts := time.Now()
+	for n := 0; n < 6; n++ {
+		store.EventUpdate(EventData{ServiceID: 1, Status: true, Timestamp: ts.Add(time.Duration(n) * time.Second)})
+	}
+
+	// Shrink history to 4 — the 4 newest events must survive
+	updated := newStoreService(1, "Alpha")
+	updated.History = ringbuffer.NewRingBuffer[EventData](4)
+	store.ReconcileServices([]Service{updated})
+
+	s, _ := store.GetServiceByID(1)
+	if s.History.MaxSize() != 4 {
+		t.Fatalf("expected resized MaxSize=4, got %d", s.History.MaxSize())
+	}
+	events := s.History.GetAll()
+	if len(events) != 4 {
+		t.Fatalf("expected 4 surviving events, got %d", len(events))
+	}
+	// oldest surviving event should be the 3rd pushed (index 2)
+	if !events[0].Timestamp.Equal(ts.Add(2 * time.Second)) {
+		t.Errorf("expected oldest surviving event at ts+2s, got %v", events[0].Timestamp)
+	}
+	if !events[3].Timestamp.Equal(ts.Add(5 * time.Second)) {
+		t.Errorf("expected newest surviving event at ts+5s, got %v", events[3].Timestamp)
+	}
+}
+
+func TestReconcile_SameHistorySize_NotRebuilt(t *testing.T) {
+	store := newTestStore(newStoreService(1, "Alpha"))
+
+	ts := time.Now()
+	store.EventUpdate(EventData{ServiceID: 1, Status: true, Timestamp: ts})
+
+	// Same MaxSize (10) — history must be untouched, not replayed
+	updated := newStoreService(1, "Alpha")
+	store.ReconcileServices([]Service{updated})
+
+	s, _ := store.GetServiceByID(1)
+	if s.History.MaxSize() != 10 {
+		t.Errorf("expected MaxSize=10 unchanged, got %d", s.History.MaxSize())
+	}
+	if s.History.GetSize() != 1 {
+		t.Errorf("expected history preserved with 1 event, got %d", s.History.GetSize())
+	}
+}
+
 func TestReconcile_PreservesRuntimeState(t *testing.T) {
 	store := newTestStore(newStoreService(1, "Alpha"))
 
