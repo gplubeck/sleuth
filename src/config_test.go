@@ -195,7 +195,10 @@ http_expected_status = 200
 http_skip_tls_verify = true
 `
 	path := writeTempConfig(t, toml)
-	config := parseConfigs(path)
+	config, err := parseConfigs(path)
+	if err != nil {
+		t.Fatalf("parseConfigs failed: %v", err)
+	}
 
 	if len(config.Services) != 1 {
 		t.Fatalf("expected 1 service, got %d", len(config.Services))
@@ -224,6 +227,41 @@ func TestValidateConfig_Empty(t *testing.T) {
 
 // ---- parseConfigs tests ----
 
+func TestParseConfigs_InvalidConfigReturnsError(t *testing.T) {
+	// duplicate service ids — must return an error, not exit, so a bad
+	// config edit + SIGHUP can't kill a running daemon
+	toml := `
+[server]
+port = 5000
+storage_type = "memory"
+
+[[service]]
+id = 1
+service_name = "Alpha"
+address = "localhost:80"
+protocol_str = "TCP"
+timer = 10
+
+[[service]]
+id = 1
+service_name = "Beta"
+address = "localhost:81"
+protocol_str = "TCP"
+timer = 10
+`
+	path := writeTempConfig(t, toml)
+	if _, err := parseConfigs(path); err == nil {
+		t.Error("expected error for duplicate service ids, got nil")
+	}
+}
+
+func TestParseConfigs_MalformedTOMLReturnsError(t *testing.T) {
+	path := writeTempConfig(t, "[[[not toml")
+	if _, err := parseConfigs(path); err == nil {
+		t.Error("expected error for malformed TOML, got nil")
+	}
+}
+
 func writeTempConfig(t *testing.T, content string) string {
 	t.Helper()
 	dir := t.TempDir()
@@ -249,7 +287,10 @@ protocol_str = "TCP"
 timer = 30
 `
 	path := writeTempConfig(t, toml)
-	config := parseConfigs(path)
+	config, err := parseConfigs(path)
+	if err != nil {
+		t.Fatalf("parseConfigs failed: %v", err)
+	}
 
 	if config.Server.Port != 5000 {
 		t.Errorf("expected port 5000, got %d", config.Server.Port)
@@ -279,7 +320,10 @@ protocol_str = "TCP"
 timer = 10
 `
 	path := writeTempConfig(t, toml)
-	config := parseConfigs(path)
+	config, err := parseConfigs(path)
+	if err != nil {
+		t.Fatalf("parseConfigs failed: %v", err)
+	}
 
 	if config.Services[0].History.MaxSize() != 100 {
 		t.Errorf("expected default MaxHistory=100, got %d", config.Services[0].History.MaxSize())
@@ -301,7 +345,10 @@ timer = 10
 MaxHistory = 50
 `
 	path := writeTempConfig(t, toml)
-	config := parseConfigs(path)
+	config, err := parseConfigs(path)
+	if err != nil {
+		t.Fatalf("parseConfigs failed: %v", err)
+	}
 
 	if config.Services[0].History.MaxSize() != 50 {
 		t.Errorf("expected MaxHistory=50, got %d", config.Services[0].History.MaxSize())
@@ -329,7 +376,10 @@ protocol_str = "UDP"
 timer = 60
 `
 	path := writeTempConfig(t, toml)
-	config := parseConfigs(path)
+	config, err := parseConfigs(path)
+	if err != nil {
+		t.Fatalf("parseConfigs failed: %v", err)
+	}
 
 	if len(config.Services) != 2 {
 		t.Fatalf("expected 2 services, got %d", len(config.Services))

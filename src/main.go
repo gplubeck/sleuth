@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"log/slog"
 	"net/http"
 	"os"
@@ -12,42 +11,41 @@ import (
 )
 
 func main() {
-    noHistory := flag.Bool("no-history", false, "Start without loading any history from .sleuth.bin")
-    flag.Parse()
+	noHistory := flag.Bool("no-history", false, "Start without loading any history from .sleuth.bin")
+	flag.Parse()
 	configPath := "config.toml"
-	log.Printf("Parsing config file: %s", configPath)
-	config := parseConfigs(configPath)
+	slog.Info("Parsing config file.", "path", configPath)
+	config, err := parseConfigs(configPath)
+	if err != nil {
+		slog.Error("Failed to parse config.", "error", err)
+		os.Exit(1)
+	}
 
-	log.Printf("Setting log level: %s", config.Server.LogLevel)
+	slog.Info("Setting log level.", "level", config.Server.LogLevel)
 	slog.SetLogLoggerLevel(getLogLevel(config.Server.LogLevel))
 
 	if err := initTemplates(); err != nil {
-		log.Fatalf("Failed to parse templates: %s", err)
+		slog.Error("Failed to parse templates.", "error", err)
+		os.Exit(1)
 	}
 
 	//mock memory store
-	store, err := NewServiceStore(config.Server.Storage, *noHistory)
-	if err != nil {
-		log.Fatalf("Unable to intialize storage. Error: %s", err)
+	store, storeErr := NewServiceStore(config.Server.Storage, *noHistory)
+	if storeErr != nil {
+		slog.Error("Unable to initialize storage.", "error", storeErr)
+		os.Exit(1)
 	}
 
 	store.ReconcileServices(config.Services)
 
-	// event bus from scheduler publisher
-	updateChannel := make(chan []byte)
-
-
 	//start server
 	server := config.Server
-	server.channel = updateChannel
-    server.publisher = NewPublisher()
+	server.publisher = NewPublisher()
 	server.store = store
 	mux := http.NewServeMux()
 	server.addRoutes(mux)
 	loggedMux := loggingMiddleware(mux)
-	log.Printf("Starting Service Sleuth Server version: %s", Version)
-	log.Printf("Build Time: %s", BuildTime)
-	log.Printf("Listening on port: %d", server.Port)
+	slog.Info("Starting Service Sleuth Server.", "version", Version, "build_time", BuildTime, "port", server.Port)
 	slog.Debug("Server cert files", "key", server.Cert_key, "cert", server.Cert_file)
 
 	//complete start up send them goroutines
@@ -66,7 +64,8 @@ func main() {
 			err = http.ListenAndServe(port, loggedMux)
 		}
 		if err != nil {
-			log.Fatalf("Failed server state.  Error: %s", err)
+			slog.Error("Failed server state.", "error", err)
+			os.Exit(1)
 		}
 	}()
 
@@ -79,50 +78,43 @@ func main() {
 			case sig := <-sigChan:
 				switch sig {
 				case syscall.SIGINT, syscall.SIGTERM:
-					log.Printf("Received signal %s. Cleaning up....", sig)
-                    store.Save()
-                    os.Exit(0)
+					slog.Info("Received shutdown signal. Cleaning up.", "signal", sig.String())
+					if err := store.Save(); err != nil {
+						slog.Error("Failed to save store during shutdown.", "error", err)
+					}
+					os.Exit(0)
 				case syscall.SIGHUP:
-					log.Printf("Received signal %s. Reloading config.", sig)
-					newConfig := parseConfigs(configPath)
-
-					// Snapshot current IDs before touching the store
-					current := store.GetServices()
-					currentIDs := make(map[uint]bool, len(current))
-					for _, s := range current {
-						currentIDs[s.ID] = true
-					}
-					newIDs := make(map[uint]bool, len(newConfig.Services))
-					for _, s := range newConfig.Services {
-						newIDs[s.ID] = true
+					slog.Info("Received signal. Reloading config.", "signal", sig.String())
+					newConfig, err := parseConfigs(configPath)
+					if err != nil {
+						slog.Error("Config reload failed, keeping previous config.", "error", err)
+						continue
 					}
 
-					// Cancel goroutines for services being removed
-					for _, s := range current {
-						if !newIDs[s.ID] {
-							scheduler.RemoveService(s.ID)
-						}
+					// Stop every monitor: running goroutines hold a stale copy
+					// of their Service, so surviving services must be restarted
+					// to pick up config changes (timer, address, protocol, ...).
+					for _, s := range store.GetServices() {
+						scheduler.RemoveService(s.ID)
 					}
 
 					// Sync the store (remove stale, update existing, add new)
 					store.ReconcileServices(newConfig.Services)
 
-					// Start goroutines for newly added services
-					for _, s := range newConfig.Services {
-						if !currentIDs[s.ID] {
-							scheduler.AddService(s)
-						}
+					// Restart monitors from the reconciled store copies so they
+					// carry both updated config and preserved runtime state.
+					for _, s := range store.GetServices() {
+						scheduler.AddService(s)
 					}
-					log.Printf("Config reloaded successfully.")
+					slog.Info("Config reloaded successfully.")
 				default:
-					log.Printf("%s caught, but not yet implemented.", sig)
+					slog.Warn("Signal caught, but not yet implemented.", "signal", sig.String())
 				}
 			}
 		}
 	}()
 
-
-    //block until goroutines are cleaned up
-    select{}
+	//block until goroutines are cleaned up
+	select {}
 
 }

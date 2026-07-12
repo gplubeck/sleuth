@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"log/slog"
 	"net/url"
 	"sleuth/internal/ringbuffer"
@@ -66,16 +65,16 @@ func validateHTTPService(service Service, i int) error {
 	return nil
 }
 
-func parseConfigs(configFile string) Config {
+func parseConfigs(configFile string) (Config, error) {
 	var config Config
 
 	_, err := toml.DecodeFile(configFile, &config)
 	if err != nil {
-		log.Fatalf("Error loading TOML config. Error: %s", err)
+		return Config{}, fmt.Errorf("error loading TOML config: %w", err)
 	}
 
 	if err := validateConfig(&config); err != nil {
-		log.Fatalf("Invalid config: %s", err)
+		return Config{}, fmt.Errorf("invalid config: %w", err)
 	}
 
 	for i, service := range config.Services {
@@ -89,7 +88,7 @@ func parseConfigs(configFile string) Config {
 		config.Services[i].History = ringbuffer.NewRingBuffer[EventData](maxSize)
 	}
 
-	return config
+	return config, nil
 }
 
 func getLogLevel(level string) slog.Level {
