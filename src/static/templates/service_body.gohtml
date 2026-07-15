@@ -7,7 +7,7 @@
     <!-- Uptime Graph -->
     <div class="uptime-graph-container">
         {{range $history}}
-        <div class="uptime-segment {{if .Status}} green {{else}} red {{end}}"
+        <div class="uptime-segment {{if not .Status}} red {{else if .Degraded}} yellow {{else}} green {{end}}"
             style="flex-grow: 1;" data-bs-toggle="tooltip" title="{{ formatTimestamp .Timestamp }} | {{.ResponseMs}}ms">
         </div>
         {{end}}

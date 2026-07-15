@@ -5,6 +5,8 @@ import (
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	"sleuth/internal/ringbuffer"
 )
 
 // ---- helpers ----
@@ -227,6 +229,97 @@ func TestHTTPProtocol_BodyContainsCombinedWithStatus(t *testing.T) {
 	_, err := s.protocol.Connect(srv.URL, 2*time.Second)
 	if err == nil {
 		t.Error("expected error when status matches but body does not, got nil")
+	}
+}
+
+// ---- degraded state ----
+
+// historyService builds a service whose history contains the given
+// check outcomes, oldest first. 'u'=up, 'd'=down, 's'=slow (up+degraded).
+func historyService(pattern string) Service {
+	s := Service{ID: 1, Name: "hist", History: ringbuffer.NewRingBuffer[EventData](20)}
+	for _, c := range pattern {
+		s.History.Push(EventData{
+			ServiceID: 1,
+			Status:    c != 'd',
+			Degraded:  c == 's',
+			Timestamp: time.Now(),
+		})
+	}
+	return s
+}
+
+func TestCurrentState(t *testing.T) {
+	cases := []struct {
+		name    string
+		pattern string // oldest -> newest
+		want    string
+	}{
+		{"empty history", "", "down"},
+		{"single up", "u", "up"},
+		{"single down", "d", "down"},
+		{"all up", "uuuuuuuu", "up"},
+		{"latest down", "uuuuuuud", "down"},
+		{"latest slow", "uuuuuuus", "degraded"},
+		{"flapping in window", "uuuuudu", "degraded"},
+		{"failure aged out of window", "duuuuuuu", "up"},
+		{"failure exactly at window edge", "uuuduuuu", "degraded"},
+		{"old slow probe does not degrade", "uusuuuuu", "up"},
+		{"down wins over flapping", "uudud", "down"},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			s := historyService(tc.pattern)
+			if got := s.CurrentState(); got != tc.want {
+				t.Errorf("pattern %q: got %q, want %q", tc.pattern, got, tc.want)
+			}
+		})
+	}
+}
+
+func TestGetStatus_DegradedMsThreshold(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(50 * time.Millisecond)
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer srv.Close()
+
+	s := httpServiceWith(Service{Address: srv.URL, DegradedMs: 10})
+	resp := s.getStatus()
+	if !resp.Status {
+		t.Fatal("expected up status")
+	}
+	if !resp.Degraded {
+		t.Errorf("expected degraded=true for %dms response with 10ms threshold", resp.ResponseMs)
+	}
+}
+
+func TestGetStatus_DegradedMsDisabled(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(50 * time.Millisecond)
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer srv.Close()
+
+	s := httpServiceWith(Service{Address: srv.URL}) // DegradedMs=0
+	resp := s.getStatus()
+	if !resp.Status || resp.Degraded {
+		t.Errorf("expected up and not degraded with threshold disabled, got status=%v degraded=%v",
+			resp.Status, resp.Degraded)
+	}
+}
+
+func TestGetStatus_FailureNotDegraded(t *testing.T) {
+	// connection refused: down, never degraded
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
+	url := srv.URL
+	srv.Close()
+
+	s := httpServiceWith(Service{Address: url, DegradedMs: 1})
+	resp := s.getStatus()
+	if resp.Status || resp.Degraded {
+		t.Errorf("expected down and not degraded, got status=%v degraded=%v", resp.Status, resp.Degraded)
 	}
 }
 

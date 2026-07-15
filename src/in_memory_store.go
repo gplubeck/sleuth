@@ -91,6 +91,7 @@ func (i *InMemoryStore) ReconcileServices(services []Service) {
 		i.store[idx].Address = cfg.Address
 		i.store[idx].Timer = cfg.Timer
 		i.store[idx].Timeout = cfg.Timeout
+		i.store[idx].DegradedMs = cfg.DegradedMs
 		i.store[idx].ProtocolString = cfg.ProtocolString
 		i.store[idx].protocol = cfg.protocol
 		i.store[idx].Icon = cfg.Icon

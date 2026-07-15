@@ -47,6 +47,7 @@ Templates and CSS are embedded in the binary, so no repo clone is needed.
 | `timer` | yes | Probe interval in seconds. |
 | `MaxHistory` | no | Ring-buffer size for uptime history. Default: `100`. |
 | `timeout` | no | Probe timeout in seconds. Default: `5` for TCP/UDP, `10` for HTTP. |
+| `degraded_ms` | no | Successful probes taking at least this many milliseconds show the service as Degraded (yellow). `0` (default) disables the slow check. Independent of `degraded_ms`, a service also shows Degraded while it is flapping: latest check up but any of the last 5 checks failed. |
 | `link` | no | Makes the service card header a clickable link. |
 | `icon` | no | Image source (URL or local path) shown next to the service name. |
 

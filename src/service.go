@@ -28,6 +28,7 @@ type Service struct {
 	Uptime         float64                          `toml:"uptime"`
 	Timer          int                              // how often to check service in seconds
 	Timeout        int    `toml:"timeout"`          // probe timeout in seconds; defaults to 5 (TCP/UDP) or 10 (HTTP)
+	DegradedMs     int64  `toml:"degraded_ms"`      // successful probes at/above this many ms count as degraded; 0 = disabled
 	LastResponseMs int64                            // most recent probe duration in milliseconds
 	Icon           string                           // name of icon to use from /assets/icons
 	History        ringbuffer.RingBuffer[EventData] `toml:"uptime_history"`
@@ -179,6 +180,7 @@ func (t *TestProtocol) Connect(address string, timeout time.Duration) (net.Conn,
 ***************************************/
 type response struct {
 	Status     bool
+	Degraded   bool // up, but response time hit the degraded_ms threshold
 	timestamp  time.Time
 	ResponseMs int64
 }
@@ -206,6 +208,7 @@ func (service *Service) getStatus() response {
 		slog.Debug("Health check failed.", "service", service.Name, "id", service.ID, "error", err.Error())
 	} else {
 		resp.Status = true
+		resp.Degraded = service.DegradedMs > 0 && resp.ResponseMs >= service.DegradedMs
 		//defer in here because conn.Close on an error will segfault
 		if conn != nil {
 			defer conn.Close()
@@ -213,6 +216,43 @@ func (service *Service) getStatus() response {
 	}
 
 	return resp
+}
+
+// Number of most recent checks examined for flapping detection.
+const flappingWindow = 5
+
+// CurrentState derives the service's display state from its history:
+//   - "down" when the latest check failed (or no checks yet)
+//   - "degraded" when the latest check is up but was slow, or any of the
+//     last few checks failed (flapping)
+//   - "up" otherwise
+//
+// Value receiver so templates can call it on Service values.
+func (service Service) CurrentState() string {
+	events := service.History.GetAll()
+	if len(events) == 0 {
+		return "down"
+	}
+
+	latest := events[len(events)-1]
+	if !latest.Status {
+		return "down"
+	}
+	if latest.Degraded {
+		return "degraded"
+	}
+
+	window := events
+	if len(window) > flappingWindow {
+		window = window[len(window)-flappingWindow:]
+	}
+	for _, event := range window {
+		if !event.Status {
+			return "degraded"
+		}
+	}
+
+	return "up"
 }
 
 /******************************************************

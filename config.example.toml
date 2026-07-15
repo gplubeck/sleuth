@@ -23,6 +23,8 @@ protocol_str = "TCP"
 timer = 30                          # probe interval in seconds
 MaxHistory = 100                    # ring-buffer size (default 100)
 # timeout = 5                       # probe timeout in seconds (default: 5 for TCP/UDP, 10 for HTTP)
+# degraded_ms = 500                 # successful probes >= this many ms show as Degraded (yellow); 0/omitted = disabled
+                                    # (services also show Degraded while flapping: up now, but a failure in the last 5 checks)
 link = "https://myapp.example.com"     # optional — makes the card header a link
 icon = "https://example.com/icon.png"  # optional — external URL
 # icon = "static/assets/myicon.png"   # or place a file in static/assets/ next to the binary

@@ -35,6 +35,9 @@ func validateConfig(config *Config) error {
 		if service.Timer <= 0 {
 			return fmt.Errorf("service %q: timer must be greater than 0", service.Name)
 		}
+		if service.DegradedMs < 0 {
+			return fmt.Errorf("service %q: degraded_ms must not be negative", service.Name)
+		}
 		if NewProtocol(service) == nil {
 			return fmt.Errorf("service %q: unknown protocol %q", service.Name, service.ProtocolString)
 		}

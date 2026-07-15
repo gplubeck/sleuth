@@ -1,14 +1,15 @@
 <!-- Header for service.  Gets swapped with htmx -->
 {{define "service-header"}}
 
+{{$state := .CurrentState}}
 <div class="service-header" onclick="window.location.href='{{.Link}}'">
     {{if .Icon}}
     <img src="{{.Icon}}" />
     {{end}}
     <div>
         <h5 class="mb-0 title">{{.Name }}</h5>
-        <span class="status-indicator {{ if .Status }}status-online{{ else }}status-offline{{ end }}">
-            {{ if .Status }}Online{{ else }}Offline{{ end }}
+        <span class="status-indicator {{if eq $state "up"}}status-online{{else if eq $state "degraded"}}status-degraded{{else}}status-offline{{end}}">
+            {{if eq $state "up"}}Online{{else if eq $state "degraded"}}Degraded{{else}}Offline{{end}}
         </span>
     </div>
 </div>

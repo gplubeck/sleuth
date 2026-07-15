@@ -110,6 +110,14 @@ header {
     background-color: var(--status-offline);
 }
 
+.status-degraded {
+    color: var(--status-degraded);
+    background-color: var(--status-degraded-soft, color-mix(in srgb, var(--status-degraded) 16%, transparent));
+}
+.status-degraded::before {
+    background-color: var(--status-degraded);
+}
+
 /* Service Body */
 .service-body {
     padding: 1rem;

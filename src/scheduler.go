@@ -11,6 +11,7 @@ import (
 type EventData struct {
 	ServiceID  uint      `json:"serviceID"`
 	Status     bool      `json:"status"`
+	Degraded   bool      `json:"degraded"`
 	Timestamp  time.Time `json:"timestamp"`
 	ResponseMs int64     `json:"responseMs"`
 }
@@ -97,6 +98,7 @@ func monitorService(ctx context.Context, service Service, eventBus chan<- []byte
 		var event EventData
 		response := service.getStatus()
 		event.Status = response.Status
+		event.Degraded = response.Degraded
 		event.Timestamp = response.timestamp
 		event.ResponseMs = response.ResponseMs
 		event.ServiceID = service.ID
